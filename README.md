@@ -1,7 +1,7 @@
 <br/><br/>
 <p align="center">
   <img width="250" src="https://github.com/annahedstroem/GEF/blob/cc3398ebbbda75dd46ed1c08a56b7a2c5a65b5ca/logo.png">
-<h3 align="center"><b>Evaluator</b></h3>
+<h3 align="center"><b>Task-agnostic Interpretability Evaluator</b></h3>
 <p align="center">PyTorch</p>
 <br/><br/>
 
