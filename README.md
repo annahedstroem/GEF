@@ -35,7 +35,8 @@ All evaluation metrics used in these experiments are implemented in [Quantus](ht
 
 ## Paper highlights 📚
 
-Generalised Explanation Faithfulness
+
+Overview of the three-step GEF evaluation method (Algo. 1) for estimating GEF (Def. 5). First, model parameter scaling (Sol. 2) is performed to obtain a perturbed model used for evaluation. Second, model and explanation distortions are computed, with the pullback operation (Sol. 3). By integrating along the path, as represented by the blue and red areas, we capture the continuous changes in the explanation, providing a more comprehensive measure of how perturbations affect the explanation. Third, distortion vectors are constructed and correlated to obtain a final GEF quality estimate (Sol. 1).
 
 </p>
 <p align="center">
@@ -69,7 +70,7 @@ captum>=0.6.0
 We hope our repository is beneficial to your work and research. If you have any feedback, questions, or ideas, please feel free to raise an issue in this repository. Alternatively, you can reach out to us directly via email for more in-depth discussions or suggestions. 
 
 📧 Contact us: 
-- Anna Hedström: [hedstroem.anna@gmail.com](mailto:hedstroem.anna@gmail.com)
+- anonymous: [hedstroem.anna@gmail.com](mailto:anonymous@gmail.com)
 
 Thank you for your interest and support!
 
