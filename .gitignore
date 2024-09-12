@@ -1,0 +1,6 @@
+assets/
+*__pycache__/
+nbs/.ipynb_checkpoints/
+nbs/results/
+*.DS_store
+assets/results/

@@ -27,16 +27,17 @@ If you find this work interesting or useful in your research, use the following 
 
 ## Repository overview
 
-The repository is organised for ease of use:
+The repository is organised as follows:
 - The `src/` folder contains all necessary functions.
 - The `nbs/` folder includes notebooks for generating the plots in the paper and for benchmarking experiments.
+- The `assets/` folder contains all files to reproduce the experiments.
 
 All evaluation metrics used in these experiments are implemented in [Quantus](https://github.com/understandable-machine-intelligence-lab/Quantus), a widely-used toolkit for metric-based XAI evaluation. Benchmarking is performed with tools from [MetaQuantus](https://github.com/annahedstroem/MetaQuantus/), a specialised framework for meta-evaluating metrics in explainability.
 
 ## Paper highlights 📚
 
 
-Overview of the three-step GEF evaluation method (Algo. 1) for estimating GEF (Def. 5). First, model parameter scaling (Sol. 2) is performed to obtain a perturbed model used for evaluation. Second, model and explanation distortions are computed, with the pullback operation (Sol. 3). By integrating along the path, as represented by the blue and red areas, we capture the continuous changes in the explanation, providing a more comprehensive measure of how perturbations affect the explanation. Third, distortion vectors are constructed and correlated to obtain a final GEF quality estimate (Sol. 1).
+Overview of the three-step GEF evaluation method (Algo. 1) for estimating GEF (Def. 5). First, model parameter scaling is performed to obtain a perturbed model used for evaluation. Second, model and explanation distortions are computed, with the pullback operation. By integrating along the path, as represented by the blue and red areas, we capture the continuous changes in the explanation, providing a more comprehensive measure of how perturbations affect the explanation. Third, distortion vectors are constructed and correlated to obtain a final GEF quality estimate.
 
 </p>
 <p align="center">
@@ -70,7 +71,7 @@ captum>=0.6.0
 We hope our repository is beneficial to your work and research. If you have any feedback, questions, or ideas, please feel free to raise an issue in this repository. Alternatively, you can reach out to us directly via email for more in-depth discussions or suggestions. 
 
 📧 Contact us: 
-- anonymous: [hedstroem.anna@gmail.com](mailto:anonymous@gmail.com)
+- anonymous: [anonymous@gmail.com](mailto:anonymous@gmail.com)
 
 Thank you for your interest and support!
 

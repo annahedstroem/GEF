@@ -1,0 +1,16 @@
+torch==2.2.1
+captum==0.7.0
+zennit==0.5.1
+matplotlib==3.8.3
+pandas==2.2.1
+numpy==1.26.4
+scipy==1.12.0
+transformers==4.38.1
+datasets==2.17.1
+medmnist
+horama
+nltk 
+shap 
+git+https://github.com/understandable-machine-intelligence-lab/Quantus.git@0.5.3
+git+https://github.com/annahedstroem/MetaQuantus.git@0.0.5
+-e git+https://github.com/AI4LIFE-GROUP/OpenXAI.git#egg=OpenXAI
