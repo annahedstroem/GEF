@@ -31,6 +31,7 @@ The repository is organised as follows:
 - The `src/` folder contains all necessary functions.
 - The `nbs/` folder includes notebooks for generating the plots in the paper and for benchmarking experiments.
 - The `assets/` folder contains all files to reproduce the experiments.
+- The `tests/` folder contains the tests.
 
 All evaluation metrics used in these experiments are implemented in [Quantus](https://github.com/understandable-machine-intelligence-lab/Quantus), a widely-used toolkit for metric-based XAI evaluation. Benchmarking is performed with tools from [MetaQuantus](https://github.com/annahedstroem/MetaQuantus/), a specialised framework for meta-evaluating metrics in explainability.
 

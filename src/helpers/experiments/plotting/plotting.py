@@ -644,18 +644,18 @@ def plot_Z_influence(discovery_df, noise_types, Z):
         plt.show()
 
 
-def plot_kde(df, methods, palette, y, corr_method, suffix):
+def plot_kde(df, methods, palette, colors_text, y, corr_method, suffix, mode):
     # Function to plot KDE.
 
-    fig, ax = plt.subplots(figsize=(4, 3))
+    fig, ax = plt.subplots(figsize=(3, 3))
     # fig, ax = plt.subplots(figsize=(5, 3))
     fig.patch.set_facecolor("white")
     ax.set_facecolor("white")
 
     sns.kdeplot(
-        data=df[df["xai method"].isin(methods)],
+        data=df[df["XAI Method"].isin(methods)],
         x=y,
-        hue="xai method",
+        hue="XAI Method",
         hue_order=methods,
         fill=True,
         palette=palette,
@@ -676,26 +676,30 @@ def plot_kde(df, methods, palette, y, corr_method, suffix):
     )
 
     plt.title(f"Top-{suffix} Tokens")
-    plt.xlabel(f"GEF Score")
+    if mode == "naive":
+        plt.xlabel(f"Fast-GEF Score")
+    else:
+        plt.xlabel(f"GEF Score")
     plt.grid(True)
     plt.savefig(
-        f"plots/benchmarking_text_kde_{suffix}.svg", facecolor=fig.get_facecolor()
+        f"plots/benchmarking_text_kde_{suffix}_{mode}.svg",
+        facecolor=fig.get_facecolor(),
     )
     plt.show()
 
 
-def prepare_text_results(
+def prepare_text_results_naive(
     files_5_tokens=[
-        "scores_consolidated_13072024_autogemma_5_sst2_with_nans.pkl",
-        "scores_consolidated_13072024_autogemma_5_sms_with_nans.pkl",
-        "scores_consolidated_28062024_autogemma_text_control_top_5.pkl",
+        "llmx_5_sst2_naive.pkl",
+        "llmx_5_sms_naive.pkl",
+        "llmx_text_control_top_5_naive.pkl",
     ],
     files_10_tokens=[
-        "scores_consolidated_13072024_autogemma_10_sst2_with_nans.pkl",
-        "scores_consolidated_13072024_autogemma_10_sms_with_nans.pkl",
-        "scores_consolidated_28062024_autogemma_text_control_top_10.pkl",
+        "llmx_10_sst2_naive.pkl",
+        "llmx_10_sms_naive.pkl",
+        "llmx_text_control_top_10_naive.pkl",
     ],
-    files_control=["scores_consolidated_09072024_autogemma_text_control_top_5_10.pkl"],
+    files_control=["llmx_text_control_top_5_10_naive.pkl"],
 ):
 
     # Process files.
@@ -719,12 +723,12 @@ def prepare_text_results(
         "gef_scores_spearmanr"
     ].astype(float)
     results_text_df_ex.index = np.arange(len(results_text_df_ex))
-    results_text_df_ex.sort_values(by="xai method", inplace=True)
+    results_text_df_ex.sort_values(by="XAI Method", inplace=True)
 
     return results_text_df_ex
 
 
-def plot_text_results(results_text_df_ex):
+def plot_text_results_naive(results_text_df_ex):
 
     # Define colors.
     colors_text = {
@@ -762,11 +766,11 @@ def plot_text_results(results_text_df_ex):
 
     for y in ["gef_scores_spearmanr_all"]:
         corr_method = y.split("_")[2].capitalize()
-        fig, ax = plt.subplots(figsize=(7, 3))
+        fig, ax = plt.subplots(figsize=(5, 3))
         box = sns.boxplot(
             data=results_text_df_ex,
-            x="xai method",
-            hue="dataset",
+            x="XAI Method",
+            hue="Dataset",
             y=y,
             order=order,
             ax=ax,
@@ -774,7 +778,179 @@ def plot_text_results(results_text_df_ex):
         )
 
         # Apply hatching to dataset 2.
-        num_boxes = len(results_text_df_ex["xai method"].unique())
+        num_boxes = len(results_text_df_ex["XAI Method"].unique())
+        for i, patch in enumerate(box.patches):
+            if i == len(colors_text) * len(dfs):
+                break
+            patch.set_facecolor(palettes[i])
+
+        # Remove xlabel.
+        ax.set_xlabel("")
+        ax.set_ylabel(f"Fast-GEF Score")
+        plt.grid(True)
+
+        plt.xticks(fontsize=11, rotation=20)
+        handles = [
+            plt.Rectangle(
+                (0, 0),
+                1,
+                1,
+                facecolor="white",
+                hatch="/" if key == "sms_spam" else "",
+                edgecolor="black",
+            )
+            for key in dfs
+        ]  # methods
+        labels = dfs.keys()
+        ax.legend(
+            handles,
+            labels,
+            title="Datasets",
+            loc="center left",
+            bbox_to_anchor=(1, 0.5),
+        )
+
+        plt.title(f"LLM-x vs Random vs Local")
+        plt.savefig(f"plots/benchmarking_text_boxplots_{dataset}_naive.svg")
+        plt.show()
+
+    plot_kde(
+        results_text_df_ex, order, palette, colors_text, y, corr_method, "K", "naive"
+    )
+
+    plot_kde(
+        results_text_df_ex,
+        ["LLM-x-5", "RAN-5", "L-INTG-5", "SHAP-P-5"],
+        [
+            colors_text["LLM-x-5"],
+            colors_text["RAN-5"],
+            colors_text["L-INTG-5"],
+            colors_text["SHAP-P-5"],
+        ],
+        colors_text,
+        y,
+        corr_method,
+        "5",
+        "naive",
+    )
+
+    plot_kde(
+        results_text_df_ex,
+        ["LLM-x-10", "RAN-10", "L-INTG-10", "SHAP-P-10"],
+        [
+            colors_text["LLM-x-10"],
+            colors_text["RAN-10"],
+            colors_text["L-INTG-10"],
+            colors_text["SHAP-P-10"],
+        ],
+        colors_text,
+        y,
+        corr_method,
+        "10",
+        "naive",
+    )
+
+
+def prepare_text_results_exact(
+    files_5_tokens=[
+        "llmx_exact_sms_5.pkl",
+        "llmx_exact_sms_control_5.pkl",
+        "llmx_exact_sst2_control_5.pkl",
+        "llmx_exact_sst2_5.pkl",
+        "llmx_exact_sst2_pshap_5.pkl",
+        "llmx_exact_sms_pshap_5.pkl",
+    ],
+    files_10_tokens=[
+        "llmx_exact_sms_control_10.pkl",
+        "llmx_exact_sst2_10.pkl",
+        "llmx_exact_sms_10.pkl",
+        "llmx_exact_sst2_control_10.pkl",
+    ],
+):
+
+    # Process files.
+    if files_5_tokens:
+        results_dfs_5s = [
+            convert_dict_to_df(f, method_suffix="-5") for f in files_5_tokens
+        ]
+    else:
+        results_dfs_5s = []
+    if files_10_tokens:
+        results_dfs_10s = [
+            convert_dict_to_df(f, method_suffix="-10") for f in files_10_tokens
+        ]
+    else:
+        results_dfs_10s = []
+
+    # Get master df.
+    results_text_df = pd.concat(results_dfs_5s + results_dfs_10s)
+    results_text_df.reset_index(inplace=True)
+
+    # Explode the DataFrame to flatten the lists in 'gef_scores'.
+    results_text_df["gef_scores_spearmanr"] = results_text_df.apply(
+        lambda row: recalculate_similarity_scores_row(row, similarity_func=spearmanr),
+        axis=1,
+    )
+    results_text_df_ex = results_text_df.explode("gef_scores_spearmanr")
+    results_text_df_ex["gef_scores_spearmanr_all"] = results_text_df_ex[
+        "gef_scores_spearmanr"
+    ].astype(float)
+    results_text_df_ex.index = np.arange(len(results_text_df_ex))
+    results_text_df_ex.sort_values(by="XAI Method", inplace=True)
+
+    return results_text_df_ex
+
+
+def plot_text_results_exact(results_text_df_ex):
+
+    # Define colors.
+    colors_text = {
+        "LLM-x-5": "#f3b76d",  # f8e860
+        "LLM-x-10": "#e69d5e",  # e4c22a
+        "RAN-5": "gray",
+        "RAN-10": "gray",
+        "L-INTG-5": "#97d4cd",  # 7c95d9
+        "L-INTG-10": "#67ae9a",  # 5c79c6
+        "SHAP-P-5": "#6e9b90",  # 3d5eb3
+        #'SHAP-P-10': "#4b6962", #1f419f
+    }
+
+    # Create palette and order list.
+    palette = list(colors_text.values())
+    palettes = [item for item in palette for _ in range(2)]
+    palettes = palette + palette
+    dataset = "both"
+    order = [
+        "LLM-x-5",
+        "LLM-x-10",
+        "RAN-5",
+        "RAN-10",
+        "L-INTG-5",
+        "L-INTG-10",
+        "SHAP-P-5",
+    ]  # , , 'SHAP-P-10']
+
+    # Plot for each Dataset in results_text_df_ex.
+    dfs = {
+        "sst2": results_text_df_ex.loc[results_text_df_ex.Dataset == "sst2"],
+        "sms_spam": results_text_df_ex.loc[results_text_df_ex.Dataset == "sms_spam"],
+    }
+
+    for y in ["gef_scores_spearmanr_all"]:
+        corr_method = y.split("_")[2].capitalize()
+        fig, ax = plt.subplots(figsize=(5, 3))
+        box = sns.boxplot(
+            data=results_text_df_ex,
+            x="XAI Method",
+            hue="Dataset",
+            y=y,
+            order=order,
+            ax=ax,
+            showfliers=False,
+        )
+
+        # Apply hatching to dataset 2.
+        num_boxes = len(results_text_df_ex["XAI Method"].unique())
         for i, patch in enumerate(box.patches):
             if i == len(colors_text) * len(dfs):
                 break
@@ -807,38 +983,83 @@ def plot_text_results(results_text_df_ex):
         )
 
         plt.title(f"LLM-x vs Random vs Local")
-        plt.savefig(f"plots/benchmarking_text_boxplots_{dataset}.svg")
+        plt.savefig(f"plots/benchmarking_text_boxplots_{dataset}_exact.svg")
         plt.show()
 
-    plot_kde(results_text_df_ex, order, palette, y, corr_method, "K")
-
     plot_kde(
-        results_text_df_ex,
-        ["LLM-x-5", "RAN-5", "L-INTG-5", "SHAP-P-5"],
-        [
-            colors_text["LLM-x-5"],
-            colors_text["RAN-5"],
-            colors_text["L-INTG-5"],
-            colors_text["SHAP-P-5"],
-        ],
-        y,
-        corr_method,
-        "5",
+        results_text_df_ex, order, palette, colors_text, y, corr_method, "K", "exact"
     )
 
     plot_kde(
         results_text_df_ex,
-        ["LLM-x-10", "RAN-10", "L-INTG-10", "SHAP-P-10"],
+        ["LLM-x-5", "RAN-5", "L-INTG-5", "SHAP-P-5"],  # ,
+        [colors_text["LLM-x-5"], colors_text["RAN-5"], colors_text["L-INTG-5"]],  # ,
+        colors_text,
+        y,
+        corr_method,
+        "5",
+        "exact",
+    )
+
+    plot_kde(
+        results_text_df_ex,
+        ["LLM-x-10", "RAN-10", "L-INTG-10"],  # , 'SHAP-P-10'
         [
             colors_text["LLM-x-10"],
             colors_text["RAN-10"],
             colors_text["L-INTG-10"],
-            colors_text["SHAP-P-10"],
-        ],
+        ],  # , colors_text['SHAP-P-10']
+        colors_text,
         y,
         corr_method,
         "10",
+        "exact",
     )
+
+
+def plot_percentage_improvement_to_random(results_text_df_ex, colors_text):
+    ran_avg = results_text_df_ex[
+        results_text_df_ex["XAI Method"].isin(["RAN-5", "RAN-10"])
+    ]["gef_scores_spearmanr_all"].mean()
+    results_text_df_ex["Percentage Improvement"] = (
+        (results_text_df_ex["gef_scores_spearmanr_all"] / ran_avg) - 1
+    ) * 100
+    results_text_df_ex["Base XAI Method"] = results_text_df_ex[
+        "XAI Method"
+    ].str.replace(r"-(5|10)", "", regex=True)
+    grouped_mean = results_text_df_ex.groupby(["Base XAI Method"])[
+        "Percentage Improvement"
+    ].mean()
+    grouped_std = results_text_df_ex.groupby(["Base XAI Method"])[
+        "Percentage Improvement"
+    ].std() / np.sqrt(250)
+
+    base_colors_text = {
+        "LLM-x": "#f3b76d",
+        "L-INTG": "#97d4cd",
+        "SHAP-P": "#6e9b90",
+        "RAN": "gray",
+    }
+
+    fig, ax = plt.subplots(figsize=(3, 3))
+
+    for method in ["LLM-x", "L-INTG", "SHAP-P"]:
+        mean_value = grouped_mean.loc[method]
+        std_value = grouped_std.loc[method]
+        ax.barh(
+            method,
+            mean_value,
+            xerr=std_value,
+            color=base_colors_text.get(method, "gray"),
+            edgecolor="black",
+        )
+
+    ax.set_xlabel("Relative Improvement (%)")
+    ax.set_title("Relative GEF to Random")
+    ax.grid(True, axis="x")
+    plt.tight_layout()
+    plt.savefig(f"plots/benchmarking_text_percentage_improvement.svg")
+    plt.show()
 
 
 def prepare_vision_tabular_results(file_names, file_names_100s, file_names_250s):
@@ -1262,4 +1483,102 @@ def plot_meta_evaluation_scatter(df):
     )
     plt.grid(True)
     plt.savefig(f"plots/meta_eval_scatter.svg")
+    plt.show()
+
+
+# Plot distribution!
+
+
+def plot_global_local_distribution(results_df):
+
+    # Explode the DataFrame to flatten the lists in 'gef_scores'
+    exploded_df = results_df.explode("gef_scores")
+    exploded_df["gef_scores"] = exploded_df["gef_scores"].astype(float)
+    colors_loc_glob = {
+        "Global": sns.color_palette("BuGn", 1).as_hex()[0],
+        "Local": sns.color_palette("Purples", 1).as_hex()[0],
+        "RAN": "gray",
+    }
+    exploded_df = exploded_df.loc[
+        (exploded_df.Task == "vision") & (exploded_df.Metric == METHOD_NAME_NAIVE)
+    ]
+    fig, ax = plt.subplots(figsize=(4, 3))
+    fig.patch.set_facecolor("white")
+    ax.set_facecolor("white")
+
+    sns.kdeplot(
+        data=exploded_df[exploded_df["Scope"] == "Global"],
+        x="gef_scores",
+        fill=True,
+        color=colors_loc_glob["Global"],
+        alpha=0.75,
+        bw_adjust=0.5,
+        common_norm=False,
+        edgecolor="black",
+        label="Global",
+    )
+    sns.kdeplot(
+        data=exploded_df[exploded_df["Scope"] == "Local"],
+        x="gef_scores",
+        fill=True,
+        color=colors_loc_glob["Local"],
+        alpha=0.75,
+        bw_adjust=0.5,
+        common_norm=False,
+        edgecolor="black",
+        label="Local",
+    )
+
+    ax.set_xlabel("GEF Score")
+    ax.set_ylabel("Density")
+    plt.legend(title="Scope", loc="center left", bbox_to_anchor=(1, 0.5))
+    plt.grid(True)
+    plt.title("Global vs Local Methods")
+    plt.savefig(f"plots/distribution_local_vs_global.svg")
+    plt.show()
+
+
+def plot_both_distortions(results_df, setting):
+
+    results_df_setting = results_df.loc[results_df["Setting"] == setting]
+
+    # Compute model distortions.
+    dist_fs = []
+    for i, method in enumerate(results_df_setting["XAI Method"].unique()):
+        dist_f = np.array(results_df_setting.model_distortions.iloc[i])
+
+        dist_fs.append(dist_f)
+    dist_f = np.array(dist_fs).mean(axis=0)
+
+    fig = plt.figure(figsize=(4, 3))
+
+    for i, method in enumerate(results_df_setting["XAI Method"].unique()):
+
+        # Compute explanation distortions.
+
+        if "-100" in method:
+            continue
+        if "-50" in method:
+            continue
+        dist_e = np.array(results_df_setting.explanation_distortions.iloc[i])
+
+        yerr = np.arange(1, 6)
+        plt.plot(dist_f.mean(axis=(0, 2)), dist_e.mean(axis=(0, 2)), c=colors[method])
+        plt.scatter(
+            dist_f.mean(axis=(0, 2)),
+            dist_e.mean(axis=(0, 2)),
+            label=method,
+            s=yerr**3,
+            edgecolor="black",
+            c=colors[method],
+        )
+
+    plt.legend(ncols=5, loc="center left", bbox_to_anchor=(1, 0.5))
+    plt.title(setting.replace("(", "").replace(", ", " ("))
+    plt.xlabel("Model Distortion")
+    plt.ylabel("Explanation Distortion")
+    plt.grid(True)
+    plt.savefig(
+        f'plots/vision_expl_distortions_{setting.lower().replace("(", "").replace(", ", "_").replace(")", "")}.svg'
+    )
     plt.show()

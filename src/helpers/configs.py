@@ -248,3 +248,19 @@ colours_meta_evalaution = {
     "Sensitivity": "#92ba92",
     "Robustness": "#666b5e",
 }
+
+
+def consolidate_outputs(base_path, output_pattern, final_output):
+    """
+    Gather all output files matching a pattern and consolidate them into a single file.
+    """
+    import glob
+
+    all_files = glob.glob(os.path.join(base_path, output_pattern))
+    consolidated_output = {}
+    for file_path in all_files:
+        with open(file_path, "rb") as f:
+            data = pickle.load(f)
+            consolidated_output.update(data)
+    with open(final_output, "wb") as f:
+        pickle.dump(consolidated_output, f)

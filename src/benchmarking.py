@@ -25,31 +25,19 @@ from settings import (
     SAVE,
     VERBOSE,
 )
-from setup_experiments import Experiment
-from setup_explanations import get_parameterised_explanations
-from common import consolidate_outputs
+from src.helpers import Experiment, get_parameterised_explanations
 from src.gef import GEF
+from src.configs import consolidate_outputs
 
 
 # Check if running in a distributed setting.
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
-os.environ["TOKENIZERS_PARALLELISM"] = "true"  # update if necessary
+os.environ["TOKENIZERS_PARALLELISM"] = "true"
 is_distributed = "WORLD_SIZE" in os.environ
-
-# import socket
-# def find_free_port():
-#     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-#         s.bind(("", 0))
-#         return s.getsockname()[1]
 
 
 if is_distributed:
-    # port = find_free_port()
-    # init_method = f"tcp://localhost:{port}"
-    # port = os.getenv("MY_DIST_PORT", "29500")  # Default to 29500 if not set
-    # init_method = f"tcp://localhost:{port}"
-    # print(f"Attempting to bind to port {port} for distributed operations")
-    dist.init_process_group(backend="nccl")  # , init_method=init_method)
+    dist.init_process_group(backend="nccl")
     rank = dist.get_rank()
     world_size = dist.get_world_size()
 else:
@@ -390,7 +378,7 @@ try:
                     # Initialise and run the GEF metric.
                     if metric_init.name == "GEF":
 
-                        if "Auto" in xai_method:
+                        if "LLM" in xai_method:
                             # Set normalise to False.
                             metric_init.normalise = False
                         else:
