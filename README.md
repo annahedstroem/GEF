@@ -53,7 +53,7 @@ Overview of the three-step GEF evaluation method (Algo. 1) for estimating GEF (D
 
 </p>
 <p align="center">
-  <img width="800" src="https://github.com/annahedstroem/GEF/blob/15e90b41614a172691563b350f7a39d17c2b4d67/algorithm.png"> 
+  <img width="800" src="https://github.com/annahedstroem/GEF/blob/bab5fd3d3e3c916028ec3a7719cb9720dc7e2e7b/algorithm.png"> 
 </p>
 
 INSERT TEXT
