@@ -5,7 +5,7 @@
 <p align="center">PyTorch</p>
 <br/><br/>
 
-This repository contains the code and experiments for the paper **["Evaluating Interpretable Methods via Geometric Alignment of Functional Distortions"]([Link](https://openreview.net/pdf?id=ukLxqA8zXj))** by Hedström et al., 2025. 
+This repository contains the code and experiments for the paper **["Evaluating Interpretable Methods via Geometric Alignment of Functional Distortions"]([Link](https://openreview.net/pdf?id=ukLxqA8zXj))** (with Survey Certification!) by Hedström et al., 2025. 
 
 [![Getting started!](https://colab.research.google.com/assets/colab-badge.svg)](anonymous)
 <!--![Python version](https://img.shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9%20%7C%203.10%20%7C%203.11-blue.svg)-->
@@ -19,7 +19,20 @@ This repository contains the code and experiments for the paper **["Evaluating I
 If you find this work interesting or useful in your research, use the following Bibtex annotation to cite us:
 
 ```bibtex
-@InProceedings{}
+@article{hedstrom2025explanation,
+        title={Explanation Faithfulness is Alignment: A Unifying and Geometric Perspective on Interpretability Evaluation},
+        author={
+          Hedstr{\"o}m, Anna and
+          Bommer, Philine Lou and
+          Tom, Burns and
+          Lapuschkin, Sebastian and
+          Samek, Wojciech and
+          H{\"o}hne, Marina M-C
+        },
+        journal={Transactions on Machine Learning Research},
+        year={2025},
+        url={https://openreview.net/forum?id=ukLxqA8zXj},
+}
 ```
 
 <!--This work has been published ...........-->
@@ -35,7 +48,6 @@ The repository is organised as follows:
 All evaluation metrics used in these experiments are implemented in [Quantus](https://github.com/understandable-machine-intelligence-lab/Quantus), a widely-used toolkit for metric-based XAI evaluation. Benchmarking is performed with tools from [MetaQuantus](https://github.com/annahedstroem/MetaQuantus/), a specialised framework for meta-evaluating metrics in explainability.
 
 ## Paper highlights 📚
-
 
 Overview of the three-step GEF evaluation method (Algo. 1) for estimating GEF (Def. 5). First, model parameter scaling is performed to obtain a perturbed model used for evaluation. Second, model and explanation distortions are computed, with the pullback operation. By integrating along the path, as represented by the blue and red areas, we capture the continuous changes in the explanation, providing a more comprehensive measure of how perturbations affect the explanation. Third, distortion vectors are constructed and correlated to obtain a final GEF quality estimate.
 
