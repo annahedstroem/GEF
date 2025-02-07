@@ -21,7 +21,7 @@ from functools import lru_cache
 from quantus.helpers import utils
 
 # from quantus.helpers.model.model_interface import ModelInterface
-from src.quantus_model_interface import ModelInterfaceGEF
+from .quantus_model_interface import ModelInterfaceGEF
 
 
 class PyTorchModelGEF(ModelInterfaceGEF[nn.Module]):

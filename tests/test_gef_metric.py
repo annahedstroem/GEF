@@ -516,9 +516,8 @@ def test_gef(
         a_batch = data["a_batch"]
     else:
         a_batch = None
-    # a_batch = None
 
-    print("type(a_batch) before", type(a_batch))
+    # Load metric.
     metric = GEF(**init_params)
     scores = metric(
         model=model,
@@ -532,10 +531,6 @@ def test_gef(
     print(
         f"\n{explain_func_kwargs['method']} - scores: {np.mean(scores):.3f}, (±{np.std(scores):.3f}) -\n{np.round(np.array(scores), 2)}"
     )
-    # print(
-    #    f"\nscores averaged: {np.mean(metric.scores_averaged):.3f}, (±{np.std(metric.scores_averaged):.3f}) {metric.scores_averaged}"
-    # )
-
     if np.isnan(metric.bridge_scores).any():
         print("\n\tNaNs: bridge_scores", np.sum(np.isnan(metric.bridge_scores)))
         print("\n\tNaNs: scores", np.sum(np.isnan(scores)))

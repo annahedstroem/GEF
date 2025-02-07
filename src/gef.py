@@ -47,10 +47,13 @@ class GEF(MetricGEF):
     """
     Implementation of the Generalised Explanation Faithfulness (GEF) metric by anonymous et al., 2024.
 
-    INSERT DESC.
+    Unified faithfulness metric, that measures explanation quality by correlating distortion quantities of the explanation function
+    and its model. Two modes are provides — normal (using techniques from differential geometry) and fast mode.
 
     References:
-        1) INSERT CITATION.
+        1) Hedström et al., "Evaluating Interpretable Methods via Geometric Alignment of Functional Distortions"
+       Transactions of Machine Learning Research, 2025.
+
 
     Attributes:
         -  _name: The name of the metric.
@@ -445,7 +448,7 @@ class GEF(MetricGEF):
         else:
             self.Z = len(self.perturbation_path)
 
-        # TODO. Only the brige scores are saved fully of all self attributes (rest only).
+        # TODO. Only the scores are saved fully of all self attributes (rest only).
         return super().__call__(
             model=model,
             x_batch=(

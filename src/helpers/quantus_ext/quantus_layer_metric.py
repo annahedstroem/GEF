@@ -35,9 +35,9 @@ from quantus.helpers.enums import (
     ScoreDirection,
 )
 
-from src.helpers.quantus_ext.quantus_model_interface import ModelInterfaceEGEF
-from src.helpers.quantus_ext.quantus_metric import MetricGEF, get_wrapped_model_gef
-from src.helpers.quantus_ext.quantus_explain import explain_gef
+from .quantus_model_interface import ModelInterfaceEGEF
+from .quantus_metric import MetricGEF, get_wrapped_model_gef
+from .quantus_explain import explain_gef
 
 if sys.version_info >= (3, 8):
     from typing import final

@@ -1,2 +1,2 @@
-from experiments import *
-from quantus_experiments import *
+from .experiments import *
+from .quantus_experiments import *

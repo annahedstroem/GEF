@@ -46,8 +46,8 @@ from quantus.helpers.enums import (
 )
 
 # from quantus.helpers.model.model_interface import ModelInterface
-from src.quantus_model_interface import ModelInterfaceGEF
-from src.quantus_pytorch_model import PyTorchModelGEF
+from .quantus_model_interface import ModelInterfaceGEF
+from .quantus_pytorch_model import PyTorchModelGEF
 
 if sys.version_info >= (3, 8):
     from typing import final

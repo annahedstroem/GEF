@@ -73,8 +73,8 @@ if util.find_spec("transformers"):
         set_seed,
     )
 
-from src.helpers.quantus_ext.quantus_metric import get_wrapped_model_gef
-from src.helpers.experiments.explanations.utils_dv import (
+from .quantus_metric import get_wrapped_model_gef
+from ..experiments.explanations.utils_dv import (
     dv,
     register_final_layer_hook,
 )
