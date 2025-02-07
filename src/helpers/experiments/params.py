@@ -5,7 +5,7 @@ from quantus import similarity_func
 import quantus
 
 from src.gef import GEF
-from src.helpers.experiments.layer_metric import MetricLayerDistortion
+from GEF.src.helpers.quantus_ext.quantus_layer_metric import MetricLayerDistortion
 
 EXPLAIN_FUNC = explain_gef  # quantus.explain
 SAVE = True

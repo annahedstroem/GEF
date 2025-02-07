@@ -111,8 +111,6 @@ def optimization_step(
             1
         )
 
-    # print(f"cropped_and_resized_images {cropped_and_resized_images.shape}")
-
     # add normal and uniform noise for better robustness
     cropped_and_resized_images.add_(
         torch.randn_like(cropped_and_resized_images) * noise_level
@@ -120,14 +118,6 @@ def optimization_step(
     cropped_and_resized_images.add_(
         (torch.rand_like(cropped_and_resized_images) - 0.5) * noise_level
     )
-
-    # print(f"cropped_and_resized_images {cropped_and_resized_images.shape}")
-    # print(f"image {image.shape}")
-
-    # compute the score and loss. # TOTDO. Maybe this breaks.
-    # if nr_channels == 1:
-    #    score = objective_function(cropped_and_resized_images)
-    # else:
     score = objective_function(cropped_and_resized_images)
 
     loss = -score

@@ -137,10 +137,6 @@ DATASETS = {
             [200, 250],
         ],  # get_indices(batch_size=100, dataset_length=100),
     },
-    # "ImageNet_VGG16": {
-    #     "model_name": "VGG16",
-    #     "indices": get_indices(batch_size=50, dataset_length=100),
-    # },
 }
 
 

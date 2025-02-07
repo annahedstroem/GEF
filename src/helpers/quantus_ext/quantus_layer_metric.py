@@ -1,4 +1,4 @@
-"""This module contains an adaptation of the implementation of the Efficient Model Parameter Randomisation Test metric."""
+"""This module contains an adaptation of the Quantus implementation of the Efficient Model Parameter Randomisation Test metric."""
 
 # This file is part of Quantus.
 # Quantus is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -35,7 +35,7 @@ from quantus.helpers.enums import (
     ScoreDirection,
 )
 
-from src.helpers.quantus_ext.quanuts_model_interface import ModelInterfaceEGEF
+from src.helpers.quantus_ext.quantus_model_interface import ModelInterfaceEGEF
 from src.helpers.quantus_ext.quantus_metric import MetricGEF, get_wrapped_model_gef
 from src.helpers.quantus_ext.quantus_explain import explain_gef
 
@@ -46,7 +46,7 @@ else:
 
 
 @final
-class MetricLayerDistortion(MetricEdited):
+class MetricLayerDistortion(MetricGEF):
     """
     Adaptation of the Efficient MPRT.
 
@@ -71,8 +71,8 @@ class MetricLayerDistortion(MetricEdited):
 
     def __init__(
         self,
-        delta_f_func: Optional[Callable] = None,
-        delta_e_func: Optional[Callable] = None,
+        model_disortion_func: Optional[Callable] = None,
+        explanation_disortion_func: Optional[Callable] = None,
         similarity_func: Optional[Callable] = None,
         layer_order: str = "bottom_up",
         seed: int = 42,
@@ -92,10 +92,10 @@ class MetricLayerDistortion(MetricEdited):
         """
         Parameters
         ----------
-        delta_e_func: callable
+        explanation_disortion_func: callable
             A callable that computes the complexity of an explanation.
-        delta_e_func_kwargs: dict, optional
-            Keyword arguments to be passed to delta_e_func on call.
+        explanation_disortion_func_kwargs: dict, optional
+            Keyword arguments to be passed to explanation_disortion_func on call.
         similarity_func: callable
             Similarity function applied to compare input and perturbed input, default=correlation_spearman.
         layer_order: string
@@ -146,11 +146,11 @@ class MetricLayerDistortion(MetricEdited):
         )
 
         # Save metric-specific attributes.
-        if delta_e_func is None:
-            delta_e_func = distance_euclidean
+        if explanation_disortion_func is None:
+            explanation_disortion_func = distance_euclidean
 
-        if delta_f_func is None:
-            delta_f_func = distance_euclidean
+        if model_disortion_func is None:
+            model_disortion_func = distance_euclidean
 
         if normalise_func is None:
             normalise_func = normalise_by_average_second_moment_estimate
@@ -161,8 +161,8 @@ class MetricLayerDistortion(MetricEdited):
         if similarity_func is None:
             similarity_func = correlation_spearman
 
-        self.delta_e_func = delta_e_func
-        self.delta_f_func = delta_f_func
+        self.explanation_disortion_func = explanation_disortion_func
+        self.model_disortion_func = model_disortion_func
         self.normalise_func = normalise_func
         self.abs = abs
         self.normalise_func_kwargs = normalise_func_kwargs
@@ -182,11 +182,6 @@ class MetricLayerDistortion(MetricEdited):
                 sensitive_params=(
                     "the order of the layer randomisation 'layer_order' (we recommend "
                     "bottom-up randomisation and advice against top-down randomisation) "
-                ),
-                citation=(
-                    'Hedström, Anna, et al. "Sanity Checks Revisited: An Exploration to Repair'
-                    ' the Model Parameter Randomisation Test." XAI in Action: Past, Present, '
-                    "and Future Applications. 2023."
                 ),
             )
 
@@ -335,7 +330,7 @@ class MetricLayerDistortion(MetricEdited):
             self._display_progressbar = False
 
         # Get the number of bins for discrete entropy calculation.
-        # if "n_bins" not in self.delta_e_func_kwargs:
+        # if "n_bins" not in self.explanation_disortion_func_kwargs:
         #     if a_batch is None:
         #         a_batch = self.explain_batch(
         #             model=model.get_model(),
@@ -344,10 +339,10 @@ class MetricLayerDistortion(MetricEdited):
         #         )
         #     self.find_n_bins(
         #         a_batch=a_batch,
-        #         n_bins_default=self.delta_e_func_kwargs.get("n_bins_default", 100),
-        #         min_n_bins=self.delta_e_func_kwargs.get("min_n_bins", 10),
-        #         max_n_bins=self.delta_e_func_kwargs.get("max_n_bins", 200),
-        #         debug=self.delta_e_func_kwargs.get("debug", False),
+        #         n_bins_default=self.explanation_disortion_func_kwargs.get("n_bins_default", 100),
+        #         min_n_bins=self.explanation_disortion_func_kwargs.get("min_n_bins", 10),
+        #         max_n_bins=self.explanation_disortion_func_kwargs.get("max_n_bins", 200),
+        #         debug=self.explanation_disortion_func_kwargs.get("debug", False),
         #     )
 
         self.explanation_distortions_by_layer: Dict[str, List[float]] = {}
@@ -374,7 +369,7 @@ class MetricLayerDistortion(MetricEdited):
                             a_batch, a_batch_original
                         ):
                             print(np.shape(a_instance), np.shape(a_instance_original))
-                            distortion = self.delta_e_func(
+                            distortion = self.explanation_disortion_func(
                                 a=a_instance.reshape(-1),
                                 b=a_instance_original.reshape(-1),
                             )
@@ -397,7 +392,7 @@ class MetricLayerDistortion(MetricEdited):
                         # print(y_pred)
                         y_pred = y_pred[idx_pred]
                         # print(np.shape(y_pred), y_pred, [y_pred])
-                        distortion = self.delta_f_func(a=[y_pred], b=[y_pred])
+                        distortion = self.model_disortion_func(a=[y_pred], b=[y_pred])
                         self.model_distortions_by_layer["orig"].append(distortion)
 
                 # Skip layers if computing delta.
@@ -421,7 +416,7 @@ class MetricLayerDistortion(MetricEdited):
                             np.shape(a_instance_original),
                             np.shape(a_instance_perturbed),
                         )
-                        distortion = self.delta_e_func(
+                        distortion = self.explanation_disortion_func(
                             a=a_instance_original.reshape(-1),
                             b=a_instance_perturbed.reshape(-1),
                         )
@@ -455,7 +450,7 @@ class MetricLayerDistortion(MetricEdited):
                     #    "y_pred_pert", np.shape(y_pred_pert), y_pred_pert, [y_pred_pert]
                     # )
                     # print("y_pred", np.shape(y_pred), y_pred, [y_pred])
-                    distortion = self.delta_f_func(a=[y_pred], b=[y_pred_pert])
+                    distortion = self.model_disortion_func(a=[y_pred], b=[y_pred_pert])
                     self.model_distortions_by_layer[layer_name].append(distortion)
 
         # Save evaluation scores as the relative rise in complexity.
@@ -519,7 +514,7 @@ class MetricLayerDistortion(MetricEdited):
 
     def evaluate_instance(
         self,
-        model: ModelInterfaceEdited,
+        model: MetricGEF,
         x: Optional[np.ndarray],
         y: Optional[np.ndarray],
         a: Optional[np.ndarray],
@@ -549,11 +544,11 @@ class MetricLayerDistortion(MetricEdited):
         """
         # Compute complexity measure.
         return None
-        # return self.delta_e_func(a=a, b=b)  # **self.delta_e_func_kwargs
+        # return self.explanation_disortion_func(a=a, b=b)  # **self.explanation_disortion_func_kwargs
 
     def custom_preprocess(
         self,
-        model: ModelInterfaceEdited,
+        model: MetricGEF,
         x_batch: np.ndarray,
         y_batch: np.ndarray,
         a_batch: Optional[np.ndarray],
@@ -593,7 +588,7 @@ class MetricLayerDistortion(MetricEdited):
 
     def generate_explanations(
         self,
-        model: ModelInterfaceEdited,
+        model: MetricGEF,
         x_batch: np.ndarray,
         y_batch: np.ndarray,
         batch_size: int,

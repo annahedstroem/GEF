@@ -7,8 +7,7 @@ from zennit import canonizers, composites, rules, attribution
 from zennit import torchvision as zvision
 from zennit import types as ztypes
 
-# from src.utils import create_masks_for_dataset
-from src.utils_act_max import register_final_layer_hook
+from .utils_dv import register_final_layer_hook
 
 
 def get_zennit_canonizer(model):
@@ -216,7 +215,7 @@ def get_parameterised_explanations(
             "am_steps": am_steps,
             "layer_name": "register_final_layer_hook(model, activation_dictionary)",
         },
-        "Auto-Interpret": {
+        "LLM-x": {
             "top_K": top_K,
             "llm_name": llm_explainer_name,
             "class_labels": class_labels,
@@ -281,7 +280,7 @@ def get_parameterised_explanations(
                 xai_methods_with_kwargs[xai]["is_top_K"] = is_top_K
                 xai_methods_with_kwargs[xai]["top_K"] = top_K
 
-            if "Auto" in xai:
+            if "LLM" in xai:
                 xai_methods_with_kwargs[xai]["llm_tokenizer"] = (
                     AutoTokenizer.from_pretrained(llm_explainer_name)
                 )

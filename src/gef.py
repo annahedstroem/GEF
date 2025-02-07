@@ -29,12 +29,12 @@ from quantus.helpers.enums import (
     ScoreDirection,
 )
 
-from src.quantus_ext.quantus_model_interface import ModelInterfaceGEF
-from src.quantus_ext.quantus_metric import (
+from src.helpers.quantus_ext.quantus_model_interface import ModelInterfaceGEF
+from src.helpers.quantus_ext.quantus_metric import (
     MetricGEF,
     get_wrapped_model_gef,
 )
-from src.quantus_ext.quantus_explain import explain_gef
+from src.helpers.quantus_ext.quantus_explain import explain_gef
 
 from typing import final
 
@@ -380,8 +380,10 @@ class GEF(MetricGEF):
 
         custom_batch_updated = {}
         custom_batch_updated["am_batch"] = None
+
         if custom_batch is not None:
-            # Passed as numpy to generate the batch (quantus-specific requirement).
+
+            # Passed as numpy to generate the batch (Quantus-specific requirement).
             custom_batch_updated["am_batch"] = custom_batch
             if isinstance(custom_batch, np.ndarray):
                 custom_batch = torch.tensor(custom_batch, dtype=torch.long).to(device)
@@ -424,9 +426,7 @@ class GEF(MetricGEF):
 
         # For llm-x explanations.
         if self.explain_func_kwargs["method"].startswith("LLM"):
-            self.explain_func_kwargs["logits_original"] = (
-                y_pred_batch  # np.max(y_pred_batch, axis=1)
-            )
+            self.explain_func_kwargs["logits_original"] = y_pred_batch
             self.explain_func_kwargs["logits_perturb"] = self.explain_func_kwargs[
                 "logits_original"
             ]
@@ -437,6 +437,7 @@ class GEF(MetricGEF):
 
         # Re-compute the perturbation levels if not given (on all samples, not batch_wise).
         if self.perturbation_path is None:
+
             # TODO. Implement this batch wise.
             self.perturbation_path = self.compute_perturbation_path(
                 model=model, x_batch=x_batch, y_batch=y_pred_class_batch
@@ -1091,7 +1092,7 @@ class ModelAdditiveNoiseActivations(torch.nn.Module):
         self,
         wrapped_model,
         model_predict_kwargs: Dict,
-        noise: float = 1e-3,  # had 1e-4
+        noise: float = 1e-3,
     ):
         """
         Initialise the ModelAdditiveNoiseActivations class.

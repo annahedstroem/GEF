@@ -8,60 +8,6 @@ from scipy.stats import spearmanr
 from src.helpers.experiments.params import META, REPLACE, GLOBAL_METHODS
 
 
-def recalculate_similarity_scores_row(
-    row: Optional[pd.Series] = None,
-    model_distortions: Optional[np.ndarray] = None,
-    explanation_distortions: Optional[np.ndarray] = None,
-    similarity_func: Optional[callable] = spearmanr,
-    keep_only_first_model: bool = False,
-    remove_first_model: bool = False,
-) -> float:
-    """
-    Calculate similarity scores between distortions using the specified similarity function for a single row.
-
-    Parameters:
-        - row (pandas.Series): A single row from a DataFrame containing model and explanation distortions.
-        - model_distortions (numpy.ndarray): Distortions of the model.
-        - explanation_distortions (numpy.ndarray): Distortions of the explanation.
-        - similarity_func (callable): Function to calculate similarity between two vectors (default is spearmanr).
-        - keep_only_first_model (bool): Whether to keep only the first model (default is False).
-        - remove_first_model (bool): Whether to remove the first model (default is False).
-
-    Returns:
-        - float: Mean similarity score across all perturbations for the given row.
-    """
-    if row is not None:
-        distortion_f = np.array(row["model_distortions"])
-        distortion_e = np.array(row["explanation_distortions"])
-    else:
-        distortion_f = np.array(model_distortions)
-        distortion_e = np.array(explanation_distortions)
-
-    M, N, batch_size = distortion_f.shape
-    scores = np.zeros((M, batch_size)) * np.nan
-
-    for m_ix in range(M):
-        if keep_only_first_model and m_ix > 0:
-            continue
-        elif remove_first_model and m_ix == 0:
-            continue
-        for s_ix in range(batch_size):
-            if not np.isnan(distortion_e[m_ix, :, s_ix]).any():
-                sim_score = similarity_func(
-                    distortion_f[m_ix, :, s_ix], distortion_e[m_ix, :, s_ix]
-                )[0]
-                scores[m_ix, s_ix] = sim_score
-    if remove_first_model:
-        # Remove first dim of scores.
-        scores = scores[1:, :]
-    if keep_only_first_model:
-        # Keep only first dim of scores.
-        scores = scores[:1, :]
-
-    gef_scores = np.nanmean(scores, axis=0)
-    return gef_scores
-
-
 def convert_dict_to_df(
     filename,
     method_suffix_name: Optional[str] = None,
@@ -73,7 +19,7 @@ def convert_dict_to_df(
     with open(filename, "rb") as f:
         scores_dict = pickle.load(f)
 
-    # Initialize dictionaries to store the results.
+    # Initialise dictionaries to store the results.
     results = {
         "Task": [],
         "Dataset": [],
@@ -100,7 +46,7 @@ def convert_dict_to_df(
     }
     indices = []
 
-    # Loop through the scores_dict to extract and compute the necessary metrics
+    # Loop through the scores_dict to extract and compute the necessary metrics.
     for setting_name, data in scores_dict.items():
         for metric_name, score_data in data.items():
             mean_scores = []
@@ -124,9 +70,10 @@ def convert_dict_to_df(
                         remove_first_model=remove_first_model,
                     )
                 except:
-                    print(
-                        "fFailed to recalculate_similarity_scores_row for {setting_name} {metric_name} {xai_method}"
-                    )
+                    if verbose:
+                        print(
+                            "fFailed to recalculate_similarity_scores_row for {setting_name} {metric_name} {xai_method}"
+                        )
                     scores = np.array(metrics["scores"])
 
                 time = metrics["time"]
@@ -150,7 +97,7 @@ def convert_dict_to_df(
                 std_error_distortion_e = np.nanstd(distortion_e) / np.sqrt(sample_size)
                 std_error_distortion_f = np.nanstd(distortion_f) / np.sqrt(sample_size)
 
-                # Append the computed metrics to the results
+                # Append the computed metrics to the results.
                 mean_scores.append(mean_score)
 
                 results["mean_score"].append(mean_score)
@@ -179,7 +126,7 @@ def convert_dict_to_df(
                 results["Dataset"].append(setting_name.split(", ")[0].replace("(", ""))
                 results["Model"].append(setting_name.split(", ")[1].replace(")", ""))
 
-                # Append the corresponding index
+                # Append the corresponding index.
                 indices.append(
                     (
                         REPLACE.get(setting_name, setting_name),
@@ -188,7 +135,7 @@ def convert_dict_to_df(
                     )
                 )
 
-            # Compute the rank for the mean scores (higher is better)
+            # Compute the rank for the mean scores (higher is better).
             ranks = pd.Series(mean_scores).rank(ascending=False)
             for rank in ranks:
                 results["rank"].append(rank)
@@ -203,8 +150,6 @@ def convert_dict_to_df(
     df["Scope"] = df["XAI Method"].apply(
         lambda x: "Global" if x in GLOBAL_METHODS else "Local"
     )
-    # df["XAI Method"] = df[["XAI Method"]].applymap(lambda x: REPLACE_TEXT.get(x, x))
-
     df.loc[df["XAI Method"] == "RAN", "Scope"] = "RAN"
 
     return df
@@ -219,7 +164,7 @@ def convert_layer_dict_to_df(
     with open(filename, "rb") as f:
         scores_dict = pickle.load(f)
 
-    # Initialize dictionaries to store the results.
+    # Initialise dictionaries to store the results.
     results = {
         "Task": [],
         "Dataset": [],
@@ -261,7 +206,7 @@ def convert_layer_dict_to_df(
                     metrics["explanation_distortions_by_layer"].values()
                 )
 
-                # Recalculate scores using calculate_similarity_scores_row.
+                # Recalculate scores using recalculate_similarity_scores_row.
                 time = metrics["time"]
                 sample_size = metrics["nr_samples"]
 
@@ -285,7 +230,7 @@ def convert_layer_dict_to_df(
                 results["Dataset"].append(setting_name.split(", ")[0].replace("(", ""))
                 results["Model"].append(setting_name.split(", ")[1].replace(")", ""))
 
-                # Append the corresponding index
+                # Append the corresponding index.
                 indices.append(
                     (
                         REPLACE.get(setting_name, setting_name),
@@ -294,7 +239,7 @@ def convert_layer_dict_to_df(
                     )
                 )
 
-    # Create a MultiIndex DataFrame
+    # Create a MultiIndex DataFrame.
     indices = pd.MultiIndex.from_tuples(
         indices, names=["Setting", "Metric", "XAI Method"]
     )
@@ -307,7 +252,65 @@ def convert_layer_dict_to_df(
     df["Scope"] = df["XAI Method"].apply(
         lambda x: "Global" if x in GLOBAL_METHODS else "Local"
     )
-    # If XAI Method = RAN, set Scope to RAN
     df.loc[df["XAI Method"] == "RAN", "Scope"] = "RAN"
 
     return df
+
+
+def recalculate_similarity_scores_row(
+    row: Optional[pd.Series] = None,
+    model_distortions: Optional[np.ndarray] = None,
+    explanation_distortions: Optional[np.ndarray] = None,
+    similarity_func: Optional[callable] = spearmanr,
+    keep_only_first_model: bool = False,
+    remove_first_model: bool = False,
+) -> float:
+    """
+    Calculate similarity scores between distortions using the specified similarity function for a single row.
+
+    Parameters
+    ----------
+    row (pandas.Series):
+        A single row from a DataFrame containing model and explanation distortions.
+    model_distortions (numpy.ndarray):
+        Distortions of the model.
+    explanation_distortions (numpy.ndarray):
+        Distortions of the explanation.
+    similarity_func (callable):
+        Function to calculate similarity between two vectors (default is spearmanr).
+    keep_only_first_model (bool):
+        Whether to keep only the first model (default is False).
+    remove_first_model (bool):
+        Whether to remove the first model (default is False).
+
+    """
+    if row is not None:
+        distortion_f = np.array(row["model_distortions"])
+        distortion_e = np.array(row["explanation_distortions"])
+    else:
+        distortion_f = np.array(model_distortions)
+        distortion_e = np.array(explanation_distortions)
+
+    M, N, batch_size = distortion_f.shape
+    scores = np.zeros((M, batch_size)) * np.nan
+
+    for m_ix in range(M):
+        if keep_only_first_model and m_ix > 0:
+            continue
+        elif remove_first_model and m_ix == 0:
+            continue
+        for s_ix in range(batch_size):
+            if not np.isnan(distortion_e[m_ix, :, s_ix]).any():
+                sim_score = similarity_func(
+                    distortion_f[m_ix, :, s_ix], distortion_e[m_ix, :, s_ix]
+                )[0]
+                scores[m_ix, s_ix] = sim_score
+    if remove_first_model:
+        # Remove first dim of scores.
+        scores = scores[1:, :]
+    if keep_only_first_model:
+        # Keep only first dim of scores.
+        scores = scores[:1, :]
+
+    gef_scores = np.nanmean(scores, axis=0)
+    return gef_scores

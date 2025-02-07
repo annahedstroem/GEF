@@ -15,7 +15,7 @@ import torch
 import pathlib
 import torch.distributed as dist
 
-from settings import (
+from src.helpers.configs import (
     EXPLAIN_FUNC,
     XAI_METHODS_MAPPING,
     METRICS,
@@ -24,10 +24,10 @@ from settings import (
     METRICS_LAYER,
     SAVE,
     VERBOSE,
+    consolidate_outputs,
 )
 from src.helpers import Experiment, get_parameterised_explanations
 from src.gef import GEF
-from src.configs import consolidate_outputs
 
 
 # Check if running in a distributed setting.
@@ -287,6 +287,7 @@ try:
                 setattr(metric_init, key, value)
 
             if experiment.config.task == "text" and "input" in metric_name:
+
                 # TODO. Extend input noise function so that type is in indices (dtype: long).
                 print(
                     f"Skipping {metric_name} for text task as perturbation function for text (dtype: long) is missing."
@@ -299,7 +300,7 @@ try:
                 task=experiment.config.task,
                 xai_methods=xai_methods,
                 device=device,
-                model=model.cuda(),  # TODO. This might be causing a problem model.cuda(),
+                model=model.cuda(),
                 am_batch=None,
                 llm_explainer_name="google/gemma-2b-it",  # meta-llama/Meta-Llama-3-8B
                 top_K=top_K,
@@ -340,10 +341,6 @@ try:
                 if "K=" in xai_method:
                     explain_func_kwargs["top_K"] = int(xai_method.split("K=")[1])
 
-                # Print all parameters of the metric init.
-                # if VERBOSE:
-                # print(list(metric_init.__dict__.items()))
-
                 if "top_K" in explain_func_kwargs:
                     print(f"top_K={explain_func_kwargs['top_K']}")
 
@@ -363,9 +360,6 @@ try:
                         print(
                             f"\n\t\t\tshapes: {x_batch.shape}, {y_batch.shape}, dtypes: {x_batch.dtype}, {y_batch.dtype}, "
                             f"{am_batch.shape if am_batch is not None else None}, "
-                            # f"{x_batch[0][0] if experiment.config.task == 'text' else None} "
-                            # f"{y_batch[0] if experiment.config.task == 'text' else None} "
-                            # f"\n{experiment.tokenizer.convert_ids_to_tokens(x_batch[index_random]) if experiment.config.task == 'text' else None}"
                         )
 
                     if am_batch is not None:
@@ -395,7 +389,7 @@ try:
                             device=device,
                             batch_size=len(
                                 x_batch
-                            ),  # experiment.config.batch_size,  # Update this if necessary.
+                            ),  # experiment.config.batch_size,  # Update this if limited compute.
                             explain_func=EXPLAIN_FUNC,
                             explain_func_kwargs=explain_func_kwargs,
                         )
@@ -454,15 +448,13 @@ try:
                             y_batch=y_batch,
                             a_batch=None,
                             device=device,
-                            batch_size=len(
-                                x_batch
-                            ),  # experiment.config.batch_size,  # Update this if necessary.
+                            batch_size=len(x_batch),  # experiment.config.batch_size,
                             explain_func=EXPLAIN_FUNC,
                             explain_func_kwargs=explain_func_kwargs,
                         )
 
                         # Add extras from the layer analysis.
-                        if "Layer" in metric_init.name:
+                        if metric_init.name == "Metric Layer Distortion":
 
                             # Check if scores_dict_batch["model_distortions_by_layer"] is an emtpy dict.
                             if not bool(
@@ -540,14 +532,6 @@ try:
                 scores_dict[setting_name][metric_name][xai_method] = scores_dict_batch
 
     if SAVE:
-
-        # Configure logging.
-        # logging.basicConfig(
-        #    filename=PATH_RESULTS_LOGGING,
-        #    level=logging.INFO,
-        #    format="%(asctime)s - %(message)s",
-        # )
-        # log_file_content(file_path="comparison_settings.py")
 
         # Save scores_dict and setups.
         with open(f"{PATH_RESULTS_SCORES}", "wb") as f:

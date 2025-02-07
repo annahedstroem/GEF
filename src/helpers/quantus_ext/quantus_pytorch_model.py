@@ -24,7 +24,7 @@ from quantus.helpers import utils
 from src.quantus_model_interface import ModelInterfaceGEF
 
 
-class PyTorchModelEdited(ModelInterfaceGEF[nn.Module]):
+class PyTorchModelGEF(ModelInterfaceGEF[nn.Module]):
     """Interface for torch models."""
 
     def __init__(

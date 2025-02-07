@@ -10,8 +10,10 @@ from matplotlib.colors import ListedColormap
 import matplotlib.lines as mlines
 
 from metaquantus import make_benchmarking_df
+
 from src.helpers.configs import *
-from src.helpers.plotting.postprocess import *
+from .postprocess import *
+from .plotting_faithfulness import *
 
 
 def plot_agreement_cm(df, cmap: str = "Greens", dtype: str = "tab", order: bool = True):
@@ -101,7 +103,6 @@ def plot_agreement(
                 va="bottom",
             )
 
-    # plt.xlabel('Metric')
     plt.ylabel("GEF Score")
     plt.ylim(df["mean_score"].min() - DIFF, df["mean_score"].max() + DIFF)
     plt.xlim(-0.25, 1.25)
@@ -226,7 +227,6 @@ def plot_faithfulness_curve_baselines(
 
     datasets = ["MNIST", "fMNIST"]
     plt.title("Model Faithfulness (Ass. 3)")
-    # plt.legend([f"MNIST, fMNIST (LeNet)"], loc='upper left')
     plt.grid(True)
 
     if ADD_DATASET_LABEL:
@@ -253,6 +253,14 @@ def plot_faithfulness_curve_baselines(
 
 
 def plot_alignment(df_robustness, noise_types, noise_levels):
+
+    colours_discovery = {
+        "(COMPAS, 3-layer MLP)": "#81D46D",
+        "(Avila, 2-layer MLP)": "#D8AD3A",
+        "(ImageNet, ResNet18)": "#70A1CE",
+        "(Path, MedCNN)": "lightcoral",
+        "(MNIST, LeNet)": "sandybrown",
+    }
 
     for noise_type in noise_types:
         df_plot = df_robustness[df_robustness["Metric"].str.contains(noise_type)]
@@ -330,7 +338,7 @@ def plot_alignment(df_robustness, noise_types, noise_levels):
                             c=colour,
                             alpha=0.5,
                             edgecolor="black",
-                            label=f"Z={i}",
+                            label=f"z={i}",
                         )
 
                 plt.legend(loc="upper right")
@@ -351,10 +359,19 @@ def plot_alignment(df_robustness, noise_types, noise_levels):
                 plt.show()
 
 
-def plot_robustness(df_robustness, noise_types):
+def plot_robustness(df_robustness, noise_types=["Bridge - Input - Additive - Class"]):
+    # Hyperparameters.
+    colours_discovery = {
+        "(COMPAS, 3-layer MLP)": "#81D46D",
+        "(Avila, 2-layer MLP)": "#D8AD3A",
+        "(ImageNet, ResNet18)": "#70A1CE",
+        "(Path, MedCNN)": "lightcoral",
+        "(MNIST, LeNet)": "sandybrown",
+    }
 
     for noise_type in noise_types:
 
+        noise_type_str = noise_type.split("Bridge - ")[1].replace(" -", " ")
         df_plot = df_robustness[df_robustness["Metric"].str.contains(noise_type)]
 
         M = 5
@@ -404,12 +421,11 @@ def plot_robustness(df_robustness, noise_types):
                         "Perturbation": np.repeat(
                             np.arange(Z), nr_samples * xai_methods
                         ),
-                        #'Perturbation': np.repeat(np.arange(Z), nr_samples * M * xai_methods),
                         "Model distortion": np.concatenate(data),
                     }
                 )
 
-                # Create violin plots for each perturbation level
+                # Create violin plots for each perturbation level.
                 sns.violinplot(
                     x="Perturbation",
                     y="Model distortion",
@@ -420,10 +436,9 @@ def plot_robustness(df_robustness, noise_types):
                 )
 
                 if PLOT_JITTER:
-                    # Overlay scatter points with jitter
-                    jitter = 0.025  # Amount of jitter to apply
+                    jitter = 0.025
 
-                    # Calculate the 1.5*IQR for each Perturbation level to determine outliers
+                    # Calculate the 1.5*IQR for each Perturbation level to determine outliers.
                     for i, level in enumerate(df_points["Perturbation"].unique()):
                         subset = df_points[df_points["Perturbation"] == level]
                         q1 = subset["Model distortion"].quantile(0.05)
@@ -431,14 +446,12 @@ def plot_robustness(df_robustness, noise_types):
                         iqr = q3 - q1
                         lower_bound = q1 - 1.5 * iqr
                         upper_bound = q3 + 1.5 * iqr
-
-                        # Identify outliers
                         outliers = subset[
                             (subset["Model distortion"] < lower_bound)
                             | (subset["Model distortion"] > upper_bound)
                         ]
 
-                        # Plot all points
+                        # Plot all points.
                         ax.scatter(
                             np.random.normal(i, jitter, size=len(subset)),
                             subset["Model distortion"],
@@ -449,7 +462,7 @@ def plot_robustness(df_robustness, noise_types):
                         )
 
                         if PLOT_OUTLIERS:
-                            # Highlight outliers with a different color and larger size
+                            # Highlight outliers with a different color and larger size.
                             ax.scatter(
                                 np.random.normal(i, jitter, size=len(outliers)),
                                 outliers["Model distortion"],
@@ -463,9 +476,7 @@ def plot_robustness(df_robustness, noise_types):
             plt.errorbar(
                 x=perturbation_levels,
                 y=model_distortions.mean(axis=1),
-                # y=model_distortions.mean(axis=0),
                 yerr=model_distortions.std(axis=1),
-                # yerr=model_distortions.std(axis=0),
                 lw=1,
                 color="blue",
                 marker="o",
@@ -480,9 +491,7 @@ def plot_robustness(df_robustness, noise_types):
                 ]
             ).mean(axis=0)
             plt.title("Model Robustness (Ass. 1)")
-            plt.ylabel(
-                "Model Distortion"
-            )  # $\mathbf{D}_f$ "+f'{s}') # .replace("(", "").replace(", ", " ("))
+            plt.ylabel("Model Distortion")
             setting_label = s.replace("(", "").replace(", ", " (")
             ax.legend([f"{setting_label}".replace(" (", "\n(")], loc="upper left")
             plt.xlabel("Additive Noise Level ($Z$)")
@@ -498,7 +507,6 @@ def plot_robustness(df_robustness, noise_types):
 
 
 def plot_sensitivity(df_sensitivity):
-    # Hyperparameters.
 
     colours_discovery_dark = {
         "(COMPAS, 3-layer MLP)": "darkgreen",
@@ -512,10 +520,8 @@ def plot_sensitivity(df_sensitivity):
     for s in settings_disc:
 
         fig, ax = plt.subplots(figsize=(4, 3))
-
         df_layers = df_sensitivity.loc[df_sensitivity.Setting == s]
         layers = df_layers.layers.iloc[0]
-
         ran_orders = ["Top", "Bottom"]
 
         def concat_lists(series):
@@ -565,18 +571,17 @@ def plot_sensitivity(df_sensitivity):
             else:
                 xticks_indices = np.arange(len(layers))  # All ticks
 
+            # Labels for the selected ticks
             xticks_labels = [
                 layers_str[i].replace("layer", "l").replace("downsample", "ds")
                 for i in xticks_indices
-            ]  # Labels for the selected ticks
-
+            ]
             ax.set_xticks(xticks_indices)
             ax.set_xticklabels(
                 xticks_labels[::-1] if order == "Bottom" else xticks_labels,
                 rotation="vertical",
                 fontsize=8 if "ResNet" in s else 10,
             )
-
         plt.legend(title="Order")
         plt.grid(True)
         plt.ylabel("Model Distortion")
@@ -631,7 +636,7 @@ def plot_Z_influence(discovery_df, noise_types, Z):
                 color=colour,
             )
 
-        plt.title(f"Influence of Z={Z}")
+        plt.title(f"Influence of z={Z}")
         ax.set_xlabel(f"Pertubation levels")
         ax.set_ylabel("Model Distortion\n(normalised)")
         ax.set_xticks(np.arange(Z))
@@ -645,10 +650,8 @@ def plot_Z_influence(discovery_df, noise_types, Z):
 
 
 def plot_kde(df, methods, palette, colors_text, y, corr_method, suffix, mode):
-    # Function to plot KDE.
 
     fig, ax = plt.subplots(figsize=(3, 3))
-    # fig, ax = plt.subplots(figsize=(5, 3))
     fig.patch.set_facecolor("white")
     ax.set_facecolor("white")
 
@@ -865,6 +868,8 @@ def prepare_text_results_exact(
         "llmx_exact_sst2_10.pkl",
         "llmx_exact_sms_10.pkl",
         "llmx_exact_sst2_control_10.pkl",
+        "llmx_exact_sst2_pshap_10.pkl",
+        "llmx_exact_sms_pshap_10.pkl",
     ],
 ):
 
@@ -1089,22 +1094,8 @@ def prepare_vision_tabular_results(file_names, file_names_100s, file_names_250s)
 
 def plot_bar_vision_tabular(results_df):
 
-    # Assuming results_df is defined and contains the necessary data
+    # Assuming results_df is defined and contains the necessary data-
     BOTH_VARIANTS = True
-
-    settings = [
-        "(Avila, 2-layer MLP)",
-        "(Adult, 3-layer MLP)",
-        "(Adult, LR)",
-        "(COMPAS, 3-layer MLP)",
-        "(COMPAS, LR)",
-        #'(ImageNet, ResNet18)',
-        #'(Derma, MedCNN)',
-        #'(Path, CNN)',
-        #'(MNIST, LeNet)',
-        #'(fMNIST, LeNet)',
-    ]
-
     settings_separated = {
         "tabular": [
             "(Avila, 2-layer MLP)",
@@ -1121,33 +1112,15 @@ def plot_bar_vision_tabular(results_df):
             "(fMNIST, LeNet)",
         ],
     }
-
-    # settings = results_df['Setting'].unique()
-
-    hatches = {
-        "DV-100": "/",
-        #'DV-50': "/",
-        "DV-250": "/",
-        "MACO-100": "*",
-        #'MACO-50': "*",
-        "MACO-250": "*",
-        "FO-100": "+",
-        "FO-50": "+",
-        "FO-250": "+",
-        # 'LRP-eps': "x",
-        # 'GBP': "o",
-        # 'GRAD': "+",
-    }
-    STD_TYPE = "std_error_score"  # std_score // std_error_score
-
+    STD_TYPE = "std_error_score"
     for k, settings in settings_separated.items():
 
-        # Determine the total number of XAI Methods across all settings
+        # Determine the total number of XAI Methods across all settings.
         fig, ax = plt.subplots(figsize=(11, 2))
         bar_width = 0.2
         opacity = 0.75
         all_xai_methods = results_df["xai method"].unique()
-        gap = 0.25  # len(all_xai_methods) * bar_width//2
+        gap = 0.25
         base_x = 0
         full_x = []
         for i, setting in enumerate(settings):
@@ -1170,7 +1143,7 @@ def plot_bar_vision_tabular(results_df):
 
             setting_data_filter = setting_data_filter.sort_values(
                 by=["Scope", "xai method"]
-            )  # , inplace=True)
+            )
             xai_methods = setting_data_filter["xai method"].unique()
             x = np.arange(len(xai_methods)) * bar_width + base_x + (i * bar_width)
             methods = [c for c in colors if c in xai_methods]
@@ -1186,10 +1159,9 @@ def plot_bar_vision_tabular(results_df):
                     mean_score,
                     bar_width,
                     edgecolor="black",
-                    yerr=std_score,  # if xai != "RAN" else 0,
+                    yerr=std_score,
                     alpha=opacity,
                     color=colors[xai],
-                    # hatch=hatches.get(xai, None),
                     label=f"{xai}" if i == 0 else "",
                 )
             base_x += gap + len(xai_methods) * bar_width
@@ -1204,14 +1176,13 @@ def plot_bar_vision_tabular(results_df):
         plt.ylabel("GEF Score")
         if k == "vision":
             plt.ylabel("Fast-GEF Score")
-        # plt.ylim(-0.25, 1.1)
         handles = [
             plt.Rectangle(
                 (0, 0), 1, 1, facecolor=colors[key], alpha=opacity, edgecolor="black"
             )
             for key in colors
             if key != "model"
-        ]  #  if key in xai_methods
+        ]
         labels = [key for key in colors if key not in TEXT_METHODS and key != "model"]
         plt.title("Cross-Domain Benchmarking of Global and Local Methods")
         plt.legend(
@@ -1227,42 +1198,16 @@ def plot_bar_vision_tabular(results_df):
             x_tick_positions,
             labels=[s.replace("(", "").replace(", ", "\n(") for s in settings],
         ),
-        # rotation=45,
-        #  ha='right') ###### \n and center
         plt.grid(True)
         plt.savefig(f"plots/gef_bar_{k}_{STD_TYPE}.svg", format="svg")
         plt.show()
 
 
-def prepare_vision_toy_exact_results(
-    file_1="scores_consolidated_27082024_bench_toy_exact_local.pkl",
-    file_2="scores_consolidated_28082024_bench_derm_exact_local.pkl",
-):
-
-    # Get exact df.
-    results_df_exact = pd.concat(
-        [
-            convert_dict_to_df(file_1),
-            convert_dict_to_df(file_2),
-        ]
-    )
-    results_df_exact.reset_index(inplace=True)
-
-    # Recompute rank and sort.
-    del results_df_exact["rank"]
-    results_df_exact["rank"] = results_df_exact.groupby(["Setting", "Metric"])[
-        "mean_score"
-    ].rank(ascending=False)
-    results_df_exact.sort_values(by=["Setting", "Scope"], inplace=True)
-    results_df_exact.head(10)
-
-    return results_df_exact
-
-
 def prepare_table(results_df_table, std_type: str = "std_error_score"):
+
     results_df_table = results_df_table.groupby(["dataset", "model", "xai method"])[
         ["mean_score", std_type]
-    ].mean()  # "task", .......
+    ].mean()
     table = (
         results_df_table.apply(
             lambda row: f'{row["mean_score"]:.2f} $\pm$ {row[std_type]:.2f}', axis=1
@@ -1279,7 +1224,6 @@ def prepare_table(results_df_table, std_type: str = "std_error_score"):
     table = table.set_index("Scope").reset_index().set_index(["Scope", "xai method"])
     table.columns = table.columns.set_levels(
         [
-            # table.columns.levels[0].str.capitalize().map(lambda x: rf'\url{{{x}}}'),  # task (unchanged)
             table.columns.levels[0]
             .str.capitalize()
             .map(lambda x: rf"\texttt{{{x}}}"),  # dataset
@@ -1312,8 +1256,6 @@ def postprocess_meta_evaluation(
 ):
 
     def process_df(df, dataset_name: str, xai_group: str):
-        # if "Faithfulness" in df.Category:
-        # df.loc[df.Category == "Faithfulness", "Category"] = "Fidelity"
         df["Category"] = pd.Categorical(
             df["Category"], categories=category_order_meta_evaluation, ordered=True
         )
@@ -1486,9 +1428,6 @@ def plot_meta_evaluation_scatter(df):
     plt.show()
 
 
-# Plot distribution!
-
-
 def plot_global_local_distribution(results_df):
 
     # Explode the DataFrame to flatten the lists in 'gef_scores'
@@ -1582,3 +1521,147 @@ def plot_both_distortions(results_df, setting):
         f'plots/vision_expl_distortions_{setting.lower().replace("(", "").replace(", ", "_").replace(")", "")}.svg'
     )
     plt.show()
+
+
+def compute_improvement_by_dataset(df_text):
+    ran_avg = df_text[df_text["XAI Method"].isin(["RAN-5", "RAN-10"])][
+        "gef_scores_spearmanr_all"
+    ].mean()
+    df_text["Percentage Improvement"] = (
+        (df_text["gef_scores_spearmanr_all"] / ran_avg) - 1
+    ) * 100
+    df_text["Base XAI Method"] = df_text["XAI Method"].str.replace(
+        r"-(5|10)", "", regex=True
+    )
+
+    datasets = df_text.Dataset.unique()
+    methods = ["LLM-x", "L-INTG", "SHAP-P"]
+
+    for dataset in datasets:
+        print(f"Dataset: {dataset}")
+        for method in methods:
+            data = df_text[
+                (df_text["Dataset"] == dataset) & (df_text["Base XAI Method"] == method)
+            ]
+            mean_value = data["Percentage Improvement"].mean()
+            std_value = data["Percentage Improvement"].std() / np.sqrt(len(data))
+            print(f"{method}: {mean_value:.2f} ± {std_value:.2f}")
+        print()
+
+
+def plot_alignment_update(
+    df_robustness,
+    noise_types,
+    noise_levels,
+    title,
+    colours_z,
+    PLOT_CONTOUR: bool = True,
+):
+    """Plots alignment with consistent colours for Z levels and shared legend title."""
+
+    colours_discovery = {
+        "(COMPAS, 3-layer MLP)": "#81D46D",
+        "(Avila, 2-layer MLP)": "#D8AD3A",
+        "(ImageNet, ResNet18)": "#70A1CE",
+        "(Path, MedCNN)": "lightcoral",
+        "(MNIST, LeNet)": "sandybrown",
+    }
+
+    PLOT_CLIPPED = True
+
+    Z = len(df_robustness.perturbation_path.iloc[0])
+    M = len(df_gef_fast_gef.model_distortions[0])
+
+    for noise_type in noise_types:
+        df_plot = df_robustness[df_robustness["Metric"] == noise_type]
+
+        nr_samples = df_plot.sample_size.iloc[0]
+
+        settings_disc = df_plot.Setting.unique()
+        perturbation_levels = np.arange(0, Z)
+
+        for s in settings_disc:
+            colour = colours_discovery[s]
+            df_robustness_setting = df_plot.loc[df_plot.Setting == s]
+
+            xai_methods = df_robustness_setting["XAI Method"].unique()
+
+            for ix, xai in enumerate(xai_methods):
+                df_robustness_setting_xai = df_robustness_setting.loc[
+                    df_robustness_setting["XAI Method"] == xai
+                ]
+                model_distortions = np.array(
+                    df_robustness_setting.model_distortions.iloc[ix]
+                ).mean(axis=0)
+                explanation_distortions = np.array(
+                    df_robustness_setting.explanation_distortions.iloc[ix]
+                ).mean(axis=0)
+
+                mean_score = df_robustness_setting["mean_score"].values
+                print(mean_score)
+
+                if PLOT_CLIPPED:
+                    model_distortions = np.clip(
+                        model_distortions,
+                        np.percentile(model_distortions, 1),
+                        np.percentile(model_distortions, 99),
+                    )
+                    explanation_distortions = np.clip(
+                        explanation_distortions,
+                        np.percentile(explanation_distortions, 1),
+                        np.percentile(explanation_distortions, 99),
+                    )
+
+                fig, ax = plt.subplots(figsize=(4, 3))
+
+                for i in noise_levels:
+                    if i in colours_z:
+                        colour = colours_z[i]
+
+                        if PLOT_CONTOUR:
+                            xi = model_distortions[i]
+                            yi = explanation_distortions[i]
+                            X, Y = np.meshgrid(
+                                np.linspace(xi.min(), xi.max(), 100),
+                                np.linspace(yi.min(), yi.max(), 100),
+                            )
+                            xy = np.vstack(
+                                [model_distortions[i], explanation_distortions[i]]
+                            )
+                            kde = gaussian_kde(xy, bw_method=0.5)
+
+                            positions = np.vstack([X.ravel(), Y.ravel()])
+                            Z_values = np.reshape(kde(positions).T, X.shape)
+                            cmap = ListedColormap([colour])
+                            cp = ax.contour(
+                                X, Y, Z_values, cmap=cmap, levels=4, alpha=0.6
+                            )
+
+                        plt.scatter(
+                            x=model_distortions[i],
+                            y=explanation_distortions[i],
+                            c=colour,
+                            alpha=0.5,
+                            edgecolor="black",
+                            # label=f"Z={i}",
+                            label="",
+                        )
+
+                plt.legend(
+                    loc="upper right",
+                    title=(r"$\rho(s, \hat{s})$" + f"={np.mean(mean_score):.2f}"),
+                )  # title+"—"+
+                plt.xlim(model_distortions.min() * 1.05, model_distortions.max() * 1.05)
+                plt.ylim(
+                    explanation_distortions.min() * 1.05,
+                    explanation_distortions.max() * 1.05,
+                )
+                plt.xlabel("Model Distortion")
+                plt.ylabel(f"{xai} Distortion")
+                plt.title(s.replace("(", "").replace(", ", " ("))
+                plt.grid(True)
+                plt.tight_layout()
+                plt.savefig(
+                    f'plots/alignment_update_{xai}_{title.lower().replace(" ", "_")}_{s.lower().replace("(", "").replace(", ", "_").replace(")", "")}.svg'
+                )
+                plt.show()

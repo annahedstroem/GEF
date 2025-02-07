@@ -1,9 +1,11 @@
 """This module contains the configuration for plotting."""
 
+import os
 import json
 from collections import OrderedDict
 import numpy as np
 import zipfile
+import pickle
 
 import matplotlib
 import matplotlib.pyplot as plt

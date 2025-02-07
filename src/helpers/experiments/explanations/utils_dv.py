@@ -75,7 +75,7 @@ def norm_crop(img, threshold=0):
     return crop  # torch.from_numpy(crop)
 
 
-def act_max(
+def dv(
     network,
     input_img,
     layer_activation,

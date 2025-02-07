@@ -11,6 +11,6 @@ medmnist
 horama
 nltk 
 shap 
+-e git+https://github.com/AI4LIFE-GROUP/OpenXAI.git#egg=OpenXAI
 git+https://github.com/understandable-machine-intelligence-lab/Quantus.git@0.5.3
 git+https://github.com/annahedstroem/MetaQuantus.git@0.0.5
--e git+https://github.com/AI4LIFE-GROUP/OpenXAI.git#egg=OpenXAI

@@ -37,8 +37,8 @@ import torchvision
 from torchvision.models import ResNet18_Weights, ViT_B_16_Weights
 from torch.utils.data import Dataset
 
-from external.OpenXAI.openxai.dataloader import ReturnLoaders  # FIXME.
-from external.OpenXAI.openxai import LoadModel
+from OpenXAI.openxai.dataloader import ReturnLoaders
+from OpenXAI.openxai import LoadModel
 
 
 OPENXAI_TABULAR_DATASETS = [
@@ -73,7 +73,7 @@ class TaskConfig:
     nr_channels: Optional[int] = None
 
 
-# Define your configurations using the `TaskConfig` dataclass.
+# Define configurations using the `TaskConfig` dataclass.
 AVAILABLE_EXPERIMENTS = {
     "imdb": TaskConfig(
         task="text",
@@ -82,9 +82,6 @@ AVAILABLE_EXPERIMENTS = {
         load_name="plain_text",
         split="test",
         base_model_name="AlignmentResearch/robust_llm_pythia-imdb-14m-mz-ada-v3",  # 7M params
-        # citizenlab/twitter-xlm-roberta-base-sentiment-finetunned",  - mega slow
-        # lvwerra/distilbert-imdb - OOM
-        # xai_layer_name="model.roberta.embeddings",
         batch_size=25,
         full_size=250,
         token_max_length=512,
@@ -98,10 +95,6 @@ AVAILABLE_EXPERIMENTS = {
         load_name="split",
         split="test",
         base_model_name="j-hartmann/emotion-english-distilroberta-base",  # ~81M params
-        # sabre-code/distilbert-base-uncased-finetuned-emotion 268 MB
-        # umarsajjad1992/distilbert-base-uncased-finetuned-emotion 268 MB
-        # esuriddick/distilbert-base-uncased-finetuned-emotion # 67M params
-        # https://huggingface.co/ale-dp/distilbert-base-uncased-finetuned-emotion/tree/main, # 268 MB
         batch_size=25,
         full_size=250,
         token_max_length=512,
@@ -122,8 +115,6 @@ AVAILABLE_EXPERIMENTS = {
         load_name="default",
         split="validation",
         base_model_name="VityaVitalich/bert-tiny-sst2",  # 13 MB
-        # "distilbert/distilbert-base-uncased-finetuned-sst-2-english", # 268 MB
-        # xai_layer_name="model.distilbert.transformer.layer[-1]",
         batch_size=125,
         full_size=250,
         token_max_length=59,
@@ -136,7 +127,7 @@ AVAILABLE_EXPERIMENTS = {
         target_col_name="label",
         load_name="plain_text",
         split="train",
-        base_model_name="mrm8488/bert-tiny-finetuned-sms-spam-detection",  # "mariagrandury/distilbert-base-uncased-finetuned-sms-spam-detection",  # 67 M params
+        base_model_name="mariagrandury/distilbert-base-uncased-finetuned-sms-spam-detection",  # 7 M
         batch_size=50,
         full_size=250,
         token_max_length=128,
@@ -146,34 +137,25 @@ AVAILABLE_EXPERIMENTS = {
     "imagenet-1k": TaskConfig(
         task="vision",
         load_name="local",
-        local_path="/mnt/beegfs/home/hedstroem/assets/",
-        # local_path="/mnt/beegfs/share/atbstaff/ImageNet_1k/ILSVRC/Data/CLS-LOC/val/",
+        local_path="/mnt/beegfs/home/anonymous/assets/",
         target_col_name="label",
         split="validation",
         base_model_name="torchvision.models.resnet18",
-        # microsoft/swin-tiny-patch4-window7-224
-        # farleyknight/mnist-digit-classification-2022-09-04,
-        # "krasserm/perceiver-io-img-clf-mnist",
-        # "farleyknight-org-username/vit-base-mnist"
         batch_size=250,
-        full_size=250,  # =300,  # local
+        full_size=250,
         num_classes=1000,
         img_size=224,
-        xai_layer_name="list(model.named_modules())[61][1]",  #  "VGG16": "model.features[-2]"
+        xai_layer_name="list(model.named_modules())[61][1]",  # if VGG16 then: "model.features[-2]"
     ),
     "mnist": TaskConfig(
         task="vision",
         load_name="local",
-        local_path="/mnt/beegfs/home/hedstroem/assets/",
-        # target_col_name="label",
-        # split="test",
+        local_path="/mnt/beegfs/home/anonymous/assets/",
         base_model_name="lenet",
         xai_layer_name="list(model.named_modules())[3][1]",
-        # base_model_name="krasserm/perceiver-io-img-clf-mnist",
         batch_size=500,
         full_size=500,
         num_classes=10,
-        # add_channel=True,
         nr_channels=1,
         img_size=28,
         class_labels={i + 1: f"{i+1}" for i in range(10)},
@@ -182,7 +164,7 @@ AVAILABLE_EXPERIMENTS = {
     "fashion_mnist": TaskConfig(
         task="vision",
         load_name="local",
-        local_path="/mnt/beegfs/home/hedstroem/assets/",
+        local_path="/mnt/beegfs/home/anonymous/assets/",
         base_model_name="lenet",
         xai_layer_name="list(model.named_modules())[3][1]",
         batch_size=500,
@@ -206,7 +188,7 @@ AVAILABLE_EXPERIMENTS = {
     "retina": TaskConfig(
         task="vision",
         load_name="local",
-        local_path="/mnt/beegfs/home/hedstroem/assets/",
+        local_path="/mnt/beegfs/home/anonymous/assets/",
         base_model_name="cnn",
         xai_layer_name="list(model.named_modules())[-11][1]",
         batch_size=250,
@@ -225,7 +207,7 @@ AVAILABLE_EXPERIMENTS = {
     "derma": TaskConfig(
         task="vision",
         load_name="local",
-        local_path="/mnt/beegfs/home/hedstroem/assets/",
+        local_path="/mnt/beegfs/home/anonymous/assets/",
         base_model_name="cnn",
         xai_layer_name="list(model.named_modules())[-11][1]",
         batch_size=500,
@@ -246,7 +228,7 @@ AVAILABLE_EXPERIMENTS = {
     "path": TaskConfig(
         task="vision",
         load_name="local",
-        local_path="/mnt/beegfs/home/hedstroem/assets/",
+        local_path="/mnt/beegfs/home/anonymous/assets/",
         base_model_name="cnn",
         xai_layer_name="list(model.named_modules())[-11][1]",
         batch_size=500,
@@ -269,7 +251,7 @@ AVAILABLE_EXPERIMENTS = {
     "blood": TaskConfig(
         task="vision",
         load_name="local",
-        local_path="/mnt/beegfs/home/hedstroem/assets/",
+        local_path="/mnt/beegfs/home/anonymous/assets/",
         base_model_name="cnn",
         xai_layer_name="list(model.named_modules())[-11][1]",
         batch_size=500,
@@ -291,7 +273,7 @@ AVAILABLE_EXPERIMENTS = {
     "chest": TaskConfig(
         task="vision",
         load_name="local",
-        local_path="/mnt/beegfs/home/hedstroem/assets/",
+        local_path="/mnt/beegfs/home/anonymous/assets/",
         base_model_name="cnn",
         xai_layer_name="list(model.named_modules())[-11][1]",
         batch_size=500,
@@ -319,7 +301,7 @@ AVAILABLE_EXPERIMENTS = {
     "pneumonia": TaskConfig(
         task="vision",
         load_name="local",
-        local_path="/mnt/beegfs/home/hedstroem/assets/",
+        local_path="/mnt/beegfs/home/anonymous/assets/",
         base_model_name="cnn",
         xai_layer_name="list(model.named_modules())[-11][1]",
         batch_size=250,
@@ -332,7 +314,7 @@ AVAILABLE_EXPERIMENTS = {
     "avila": TaskConfig(
         task="tabular",
         load_name="local",
-        # local_path="/mnt/beegfs/home/hedstroem/assets/",
+        # local_path="/mnt/beegfs/home/anonymous/assets/",
         local_path="../../assets/",
         base_model_name="mlp",
         batch_size=500,
@@ -356,19 +338,6 @@ AVAILABLE_EXPERIMENTS = {
         num_classes=2,
         class_labels={0: "not rearrested", 1: "rearrested"},
     ),
-    # sehee-lim/fashion_classification_model, "SE6446/VitMix-v1"
-    # "fashion_mnist": TaskConfig(
-    #     task="vision",
-    #     target_col_name="label",
-    #     split="test",
-    #     base_model_name="abhishek/autotrain_fashion_mnist_vit_base",
-    #     batch_size=250,
-    #     full_size=500,
-    #     num_classes=10,
-    #     add_channel=True,
-    #     img_size=28,
-    #     class_labels={}
-    # ),
 }
 
 
@@ -386,14 +355,6 @@ IMAGENET_MODELS_SPECIAL_LOADING = {
         "processor": ConvNextImageProcessor,
     },
 }
-
-# "torchvision.models.alexnet": {},
-# "torchvision.models.resnet18": {},
-# "microsoft/swin-tiny-patch4-window7-224" # 113 MB
-# "apple/mobilevit-small",  # 22.5 MB
-# facebook/convnext-tiny-224 #  114 MB
-# "microsoft/resnet-50" -> 103 MB
-# google/vit-base-patch16-224 -> "facebook/deit-small-patch16-224"
 
 
 class LeNet(torch.nn.Module):
@@ -447,7 +408,6 @@ class MLP(torch.nn.Module):
         return logits
 
 
-# Define a simple black-box CNN model.
 class RetinaCNN(torch.nn.Module):
     def __init__(self, in_channels: int = 3, num_classes: int = 5):
         super(RetinaCNN, self).__init__()
@@ -503,7 +463,6 @@ class RetinaCNN(torch.nn.Module):
         return x
 
 
-# Define a simple black-box CNN model.
 class DermaCNN(torch.nn.Module):
     def __init__(self, in_channels: int = 3, num_classes: int = 7):
         super(DermaCNN, self).__init__()
@@ -559,7 +518,6 @@ class DermaCNN(torch.nn.Module):
         return x
 
 
-# Define a simple black-box CNN model.
 class PathCNN(torch.nn.Module):
     def __init__(self, in_channels: int = 3, num_classes: int = 9):
         super(PathCNN, self).__init__()
@@ -615,7 +573,6 @@ class PathCNN(torch.nn.Module):
         return x
 
 
-# Define a simple black-box CNN model.
 class BloodCNN(torch.nn.Module):
     def __init__(self, in_channels: int = 3, num_classes: int = 8):
         super(BloodCNN, self).__init__()
@@ -671,7 +628,6 @@ class BloodCNN(torch.nn.Module):
         return x
 
 
-# Define a simple black-box CNN model.
 class ChestCNN(torch.nn.Module):
     def __init__(self, in_channels: int = 1, num_classes: int = 14):
         super(ChestCNN, self).__init__()
@@ -727,7 +683,6 @@ class ChestCNN(torch.nn.Module):
         return x
 
 
-# Define a simple black-box CNN model.
 class PneumoniaCNN(torch.nn.Module):
     def __init__(self, in_channels: int = 1, num_classes: int = 2):
         super(PneumoniaCNN, self).__init__()
@@ -843,15 +798,6 @@ class OpenXAIModelWrapper(torch.nn.Module):
         np_output = self.model.predict(x)  # .float()
         return np_output
 
-    # def forward(self, x):
-    #     np_output = self.model.predict(
-    #         x  # .float()
-    #     )  # Assumes the output from predict is a numpy array.
-    #     tensor_output = torch.tensor(
-    #         np_output, dtype=x.dtype, device=x.device, requires_grad=True
-    #     )
-    #     return tensor_output
-
 
 class Experiment:
 
@@ -887,12 +833,6 @@ class Experiment:
         )
 
         self.tokenizer = self.load_tokenizer()
-        # self.config.token_max_length = (
-        #     self.tokenizer.model_max_length
-        #     if (self.tokenizer is not None and self.config.token_max_length is None)
-        #     else None
-        # )
-        # print(print(self.config.token_max_length))
         self.processor = self.load_processor()
 
         self.test_dataloader = self.load_test_dataset()
@@ -952,10 +892,6 @@ class Experiment:
             model = OpenXAIModelWrapper(model_openxai)
             model.to(self.device)
             return model
-
-        #    print(
-        #   f"Couldn't load local model for '{self.dataset_name}', with {self.model_name}."
-        #      )
 
         # Load HuggingFace model.
         classifier = (
@@ -1033,7 +969,7 @@ class Experiment:
                     self.dataset_name,
                     self.config.load_name,
                     split=self.config.split,
-                    cache_dir="/mnt/beegfs/home/hedstroem/datasets/",
+                    cache_dir="/mnt/beegfs/home/anonymous/datasets/",
                 )
             except Exception as e:
                 raise KeyError(
@@ -1050,7 +986,7 @@ class Experiment:
                             dataset[self.config.feature_col_name],
                             padding="max_length",
                             truncation=True,
-                            max_length=self.config.token_max_length,  # self.tokenizer.model_max_length
+                            max_length=self.config.token_max_length,
                             return_tensors="pt",
                         )
 
@@ -1275,33 +1211,3 @@ class Experiment:
 
 if __name__ == "__main__":
     pass
-
-    """
-    device = torch.device("cuda")
-    dataset_names = "mnist,fashion_mnist,imagenet-1k,sms_spam,sst2,imdb,fashion_mnist,mnist".split(
-        ","
-    )
-    model_names = [None for _ in range(len(dataset_names))]
-
-    for dataset_name, model_name in zip(dataset_names, model_names):
-        experiment = Experiment(
-            dataset_name=dataset_name, model_name=model_name, device=device
-        )
-        model = experiment.model
-        tokenizer = experiment.tokenizer
-        xai_layer_name = experiment.xai_layer_name
-        for x_batch, y_batch, am_batch in experiment.generate_batch():
-            # Here you can apply your model on the batch
-            print(
-                x_batch.shape,
-                y_batch.shape,
-                am_batch.shape if am_batch is not None else None,
-            )
-
-
-    # if self.device.type == "cpu":
-    #     model.load_state_dict(
-    #         torch.load(model_path, map_location=torch.device("cpu"))
-    #     )
-    # else:
-    """

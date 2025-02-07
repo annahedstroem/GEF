@@ -73,13 +73,13 @@ if util.find_spec("transformers"):
         set_seed,
     )
 
-from src.quantus_metric import get_wrapped_model_gef
-from src.utils_act_max import (
-    act_max,
+from src.helpers.quantus_ext.quantus_metric import get_wrapped_model_gef
+from src.helpers.experiments.explanations.utils_dv import (
+    dv,
     register_final_layer_hook,
 )
-from src.utils_autointerpret import *
-from src.utils_maco import *
+from src.helpers.experiments.explanations.utils_llmx import *
+from src.helpers.experiments.explanations.utils_maco_fo import *
 
 
 def explain_gef(model, inputs, targets, device, **kwargs) -> np.ndarray:
@@ -792,7 +792,7 @@ def generate_feature_visualisation_explanation(
             layer_name = eval(kwargs.get("layer_name"))
             alpha = kwargs.get("alpha", torch.tensor(50))
 
-            explanation[i] = act_max(
+            explanation[i] = dv(
                 network=model,
                 input_img=inputs_random[i],
                 layer_activation=activation_dictionary,
