@@ -7,7 +7,10 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.patheffects as pe
 from matplotlib.colors import ListedColormap
+from matplotlib.collections import LineCollection
 import matplotlib.lines as mlines
+from matplotlib.colors import Normalize
+from matplotlib.cm import get_cmap
 
 from metaquantus import make_benchmarking_df
 
@@ -1665,3 +1668,169 @@ def plot_alignment_update(
                     f'plots/alignment_update_{xai}_{title.lower().replace(" ", "_")}_{s.lower().replace("(", "").replace(", ", "_").replace(")", "")}.svg'
                 )
                 plt.show()
+
+
+from matplotlib.collections import LineCollection
+
+
+def plot_sample_distortion_gradient(
+    df_robustness, noise_type, samples_to_plot, cmap="viridis"
+):
+    """
+    Plots distortions for individual samples across perturbation levels with gradient colouring on lines.
+
+    Args:
+        df_robustness: DataFrame containing robustness metrics.
+        noise_type: Specific noise type to filter.
+        samples_to_plot: Number of samples to visualise per plot.
+        cmap: Name of the colour map for gradient colouring.
+    """
+    from matplotlib.cm import get_cmap
+    from matplotlib.colors import Normalize
+
+    df_plot = df_robustness[df_robustness["Metric"].str.contains(noise_type)]
+
+    settings_disc = df_plot.Setting.unique()
+
+    for s in settings_disc:
+        df_robustness_setting = df_plot.loc[df_plot.Setting == s]
+
+        xai_methods = df_robustness_setting["XAI Method"].unique()
+        cmap_instance = get_cmap(cmap)
+
+        for xai in xai_methods:
+            df_robustness_setting_xai = df_robustness_setting.loc[
+                df_robustness_setting["XAI Method"] == xai
+            ]
+            model_distortions_all = np.array(
+                df_robustness_setting_xai["model_distortions"].tolist()
+            ).mean(axis=(0, 1))
+            explanation_distortions_all = np.array(
+                df_robustness_setting_xai["explanation_distortions"].tolist()
+            ).mean(axis=(0, 1))
+
+            num_samples = min(samples_to_plot, model_distortions_all.shape[-1])
+            perturbation_levels = model_distortions_all.shape[0]
+
+            fig, ax = plt.subplots(figsize=(4, 3))
+
+            num_samples_indices = np.random.randint(
+                0, model_distortions_all.shape[1], num_samples
+            )
+            for sample_idx in num_samples_indices:  # range():
+                model_distortions = model_distortions_all[:, sample_idx]
+                explanation_distortions = explanation_distortions_all[:, sample_idx]
+
+                # Scatter points for clarity.
+                ax.plot(
+                    np.arange(perturbation_levels),
+                    model_distortions,
+                    label="Sample" if sample_idx == num_samples_indices[0] else None,
+                    # explanation_distortions,
+                )
+                ax.scatter(
+                    np.arange(perturbation_levels),
+                    model_distortions,
+                    # explanation_distortions,
+                    #########c=np.arange(1, perturbation_levels + 1),
+                    #########cmap=cmap,
+                    edgecolor="black",
+                    s=30,
+                    zorder=3,
+                )
+
+            # Add colour bar.
+            #######sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+            #######sm.set_array([])
+            #######cbar = plt.colorbar(sm, ax=ax)
+            #######cbar.set_label("Perturbation Level (Z)", rotation=270, labelpad=15)
+
+            plt.legend()
+            plt.xlabel("Perturbation Level")
+            plt.ylabel("Model Distortion")
+            plt.title(f"{s}")
+            plt.grid(True)
+            plt.savefig(
+                f'plots/distortion_gradient_line_{xai}_{s.lower().replace("(", "").replace(", ", "_").replace(")", "")}.svg'
+            )
+            plt.show()
+
+
+def plot_sample_distortion_gradient(
+    df_robustness, noise_type, samples_to_plot, cmap="viridis"
+):
+    """
+    Plots distortions for individual samples across perturbation levels with gradient colouring on lines.
+
+    Args:
+        df_robustness: DataFrame containing robustness metrics.
+        noise_type: Specific noise type to filter.
+        samples_to_plot: Number of samples to visualise per plot.
+        cmap: Name of the colour map for gradient colouring.
+    """
+    df_plot = df_robustness[df_robustness["Metric"].str.contains(noise_type)]
+    settings_disc = df_plot.Setting.unique()
+
+    for s in settings_disc:
+        df_robustness_setting = df_plot.loc[df_plot.Setting == s]
+        xai_methods = df_robustness_setting["XAI Method"].unique()
+        cmap_instance = get_cmap(cmap)
+
+        for a_ix, xai in enumerate(xai_methods):
+            if a_ix > 0:
+                continue
+            df_robustness_setting_xai = df_robustness_setting.loc[
+                df_robustness_setting["XAI Method"] == xai
+            ]
+            model_distortions_all = np.array(
+                df_robustness_setting_xai["model_distortions"].tolist()
+            ).mean(axis=(0, 1))
+            perturbation_levels = model_distortions_all.shape[0]
+
+            fig, ax = plt.subplots(figsize=(4.5, 3))
+            num_samples = min(samples_to_plot, model_distortions_all.shape[-1])
+            sample_indices = np.random.randint(
+                0, model_distortions_all.shape[1], num_samples
+            )
+
+            for sample_idx in sample_indices:
+                model_distortions = model_distortions_all[:, sample_idx]
+
+                # Prepare segments for gradient line
+                points = np.array(
+                    [np.arange(perturbation_levels), model_distortions]
+                ).T.reshape(-1, 1, 2)
+                segments = np.concatenate([points[:-1], points[1:]], axis=1)
+
+                norm = Normalize(vmin=0, vmax=perturbation_levels - 1)
+                lc = LineCollection(segments, cmap=cmap_instance, norm=norm)
+                lc.set_array(np.arange(perturbation_levels - 1))
+                lc.set_linewidth(2)
+                ax.add_collection(lc)
+
+                # Add scatter points for clarity
+                ax.scatter(
+                    np.arange(perturbation_levels),
+                    model_distortions,
+                    c=np.arange(perturbation_levels),
+                    cmap=cmap,
+                    edgecolor="black",
+                    s=40,
+                    zorder=3,
+                )
+
+            # Add colour bar
+            sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+            sm.set_array([])
+            cbar = plt.colorbar(sm, ax=ax)
+            cbar.set_label("Perturbation Level", rotation=270, labelpad=15)
+
+            plt.xlabel("Perturbation Level")
+            plt.ylabel("Model Distortion")
+            plt.title(f"{s}")
+            plt.grid(True)
+            plt.tight_layout()
+            plt.savefig(
+                f'plots/distortion_gradient_line_{xai}_{s.lower().replace("(", "").replace(", ", "_").replace(")", "")}.svg'
+            )
+            plt.show()

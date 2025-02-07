@@ -70,10 +70,10 @@ def convert_dict_to_df(
                         remove_first_model=remove_first_model,
                     )
                 except:
-                    if verbose:
-                        print(
-                            "fFailed to recalculate_similarity_scores_row for {setting_name} {metric_name} {xai_method}"
-                        )
+                    # if verbose:
+                    # print(
+                    #    "fFailed to recalculate_similarity_scores_row for {setting_name} {metric_name} {xai_method}"
+                    # )
                     scores = np.array(metrics["scores"])
 
                 time = metrics["time"]
