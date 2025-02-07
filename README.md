@@ -20,18 +20,18 @@ If you find this work interesting or useful in your research, use the following 
 
 ```bibtex
 @article{hedstrom2025explanation,
-        title={Explanation Faithfulness is Alignment: A Unifying and Geometric Perspective on Interpretability Evaluation},
-        author={
-          Hedstr{\"o}m, Anna and
-          Bommer, Philine Lou and
-          Tom, Burns and
-          Lapuschkin, Sebastian and
-          Samek, Wojciech and
-          H{\"o}hne, Marina M-C
-        },
-        journal={Transactions on Machine Learning Research},
-        year={2025},
-        url={https://openreview.net/forum?id=ukLxqA8zXj},
+    title={Explanation Faithfulness is Alignment: A Unifying and Geometric Perspective on Interpretability Evaluation},
+    author={
+      Hedstr{\"o}m, Anna and
+      Bommer, Philine Lou and
+      Tom, Burns and
+      Lapuschkin, Sebastian and
+      Samek, Wojciech and
+      H{\"o}hne, Marina M-C
+    },
+    journal={Transactions on Machine Learning Research},
+    year={2025},
+    url={https://openreview.net/forum?id=ukLxqA8zXj},
 }
 ```
 
