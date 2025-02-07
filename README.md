@@ -5,8 +5,7 @@
 <p align="center">PyTorch</p>
 <br/><br/>
 
-This repository contains the code and experiments for the paper **["Is Your Explanation Aligned? 
-A Unified and Geometric Perspective on Generalised Explanation Faithfulness (GEF)"](Link)** by anonymous et al., 2024. 
+This repository contains the code and experiments for the paper **["Evaluating Interpretable Methods via Geometric Alignment of Functional Distortions"]([Link](https://openreview.net/pdf?id=ukLxqA8zXj))** by Hedström et al., 2025. 
 
 [![Getting started!](https://colab.research.google.com/assets/colab-badge.svg)](anonymous)
 <!--![Python version](https://img.shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9%20%7C%203.10%20%7C%203.11-blue.svg)-->
@@ -49,7 +48,7 @@ INSERT TEXT
 
 ## Installation
 
-Install the necessary packages using the provided [requirements.txt](https://annahedstroem/sanity-checks-revisited/blob/main/requirements.txt):
+Install the necessary packages using the provided [requirements.txt](https://annahedstroem/gef/blob/main/requirements.txt):
 
 ```bash
 pip install -r requirements.txt
@@ -72,7 +71,7 @@ captum>=0.6.0
 We hope our repository is beneficial to your work and research. If you have any feedback, questions, or ideas, please feel free to raise an issue in this repository. Alternatively, you can reach out to us directly via email for more in-depth discussions or suggestions. 
 
 📧 Contact us: 
-- anonymous: [anonymous@gmail.com](mailto:anonymous@gmail.com)
+- Anna Hedström: [hedstroem.anna@gmail.com](mailto:hedstroem.anna@gmail.com)
 
 Thank you for your interest and support!
 
