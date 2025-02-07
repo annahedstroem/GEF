@@ -14,6 +14,8 @@ This repository contains the code and experiments for the paper **["Evaluating I
 <!--[![Python package](https://github.com/annahedstroem/MetaQuantus/actions/workflows/python-publish.yml/badge.svg)](https://github.com/annahedstroem/MetaQuantus/actions/workflows/python-publish.yml/badge.svg)-->
 <!--[![Launch Tutorials](https://mybinder.org/badge_logo.svg)](anonymous)-->
 
+Please note that this repository is under active development!
+
 ## Citation
 
 If you find this work interesting or useful in your research, use the following Bibtex annotation to cite us:
