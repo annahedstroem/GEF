@@ -14,6 +14,8 @@ This repository contains the code and experiments for the paper **["Evaluating I
 <!--[![Python package](https://github.com/annahedstroem/MetaQuantus/actions/workflows/python-publish.yml/badge.svg)](https://github.com/annahedstroem/MetaQuantus/actions/workflows/python-publish.yml/badge.svg)-->
 <!--[![Launch Tutorials](https://mybinder.org/badge_logo.svg)](anonymous)-->
 
+Please note that this repository is under active development!
+
 ## Citation
 
 If you find this work interesting or useful in your research, use the following Bibtex annotation to cite us:
@@ -49,14 +51,15 @@ All evaluation metrics used in these experiments are implemented in [Quantus](ht
 
 ## Paper highlights 📚
 
-Overview of the three-step GEF evaluation method (Algo. 1) for estimating GEF (Def. 5). First, model parameter scaling is performed to obtain a perturbed model used for evaluation. Second, model and explanation distortions are computed, with the pullback operation. By integrating along the path, as represented by the blue and red areas, we capture the continuous changes in the explanation, providing a more comprehensive measure of how perturbations affect the explanation. Third, distortion vectors are constructed and correlated to obtain a final GEF quality estimate.
+Overview of the three-step GEF evaluation method (Algo. 1) for estimating GEF (Def. 5). 
+1. First, model parameter scaling is performed to obtain a perturbed model used for evaluation.
+2. Second, model and explanation distortions are computed, with the pullback operation. By integrating along the path, as represented by the blue and red areas, we capture the continuous changes in the explanation, providing a more comprehensive measure of how perturbations affect the explanation.
+3. Third, distortion vectors are constructed and correlated to obtain a final GEF quality estimate.
 
 </p>
 <p align="center">
   <img width="800" src="https://github.com/annahedstroem/GEF/blob/bab5fd3d3e3c916028ec3a7719cb9720dc7e2e7b/algorithm.png"> 
 </p>
-
-INSERT TEXT
 
 ## Installation
 
