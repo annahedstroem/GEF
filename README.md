@@ -22,7 +22,7 @@ If you find this work interesting or useful in your research, use the following 
 
 ```bibtex
 @article{hedstrom2025explanation,
-    title={Explanation Faithfulness is Alignment: A Unifying and Geometric Perspective on Interpretability Evaluation},
+    title={Evaluating Interpretable Methods via Geometric Alignment of Functional Distortions},
     author={
       Hedstr{\"o}m, Anna and
       Bommer, Philine Lou and
