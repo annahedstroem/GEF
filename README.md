@@ -51,15 +51,16 @@ All evaluation metrics used in these experiments are implemented in [Quantus](ht
 
 ## Paper highlights 📚
 
-Overview of the three-step GEF evaluation method (Algo. 1) for estimating GEF (Def. 5). 
-1. First, model parameter scaling is performed to obtain a perturbed model used for evaluation.
-2. Second, model and explanation distortions are computed, with the pullback operation. By integrating along the path, as represented by the blue and red areas, we capture the continuous changes in the explanation, providing a more comprehensive measure of how perturbations affect the explanation.
-3. Third, distortion vectors are constructed and correlated to obtain a final GEF quality estimate.
-
 </p>
 <p align="center">
   <img width="800" src="https://github.com/annahedstroem/GEF/blob/bab5fd3d3e3c916028ec3a7719cb9720dc7e2e7b/algorithm.png"> 
 </p>
+
+
+Overview of the three-step GEF evaluation method (Algo. 1) for estimating GEF (Def. 5). 
+1. First, model parameter scaling is performed to obtain a perturbed model used for evaluation.
+2. Second, model and explanation distortions are computed, with the pullback operation. By integrating along the path, as represented by the blue and red areas, we capture the continuous changes in the explanation, providing a more comprehensive measure of how perturbations affect the explanation.
+3. Third, distortion vectors are constructed and correlated to obtain a final GEF quality estimate.
 
 ## Installation
 
