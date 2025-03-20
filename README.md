@@ -5,7 +5,7 @@
 <p align="center">PyTorch</p>
 <br/><br/>
 
-This repository contains the code and experiments for the paper **["Evaluating Interpretable Methods via Geometric Alignment of Functional Distortions"](https://openreview.net/pdf?id=ukLxqA8zXj)** (with Survey Certification!) by Hedström et al., 2025. 
+This repository contains the code and experiments for the paper **["Evaluating Interpretable Methods via Geometric Alignment of Functional Distortions"](https://openreview.net/pdf?id=ukLxqA8zXj)** by **Hedström et al., 2025** (with Survey Certification!). 
 
 [![Getting started!](https://colab.research.google.com/assets/colab-badge.svg)](anonymous)
 <!--![Python version](https://img.shields.io/badge/python-3.7%20%7C%203.8%20%7C%203.9%20%7C%203.10%20%7C%203.11-blue.svg)-->
